@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ customer.name }}{% endblock %}
+{% block topbar_title %}Customers{% endblock %}
+{% block page_title %}{{ customer.name }}{% endblock %}
+{% block page_subtitle %}{% if customer.company %}{{ customer.company }} · {% endif %}{{ customer.email }}{% endblock %}
+{% block page_actions %}
+  {% block customer_actions %}{% endblock %}
+  <a href="{% url 'customers:update' customer.pk %}" class="btn btn-light btn-sm">{% icon "pencil" "me-1" %}Edit</a>
+{% endblock %}
+
+{% block content %}
+  <div class="row g-3">
+    <div class="col-lg-4">
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <span class="avatar">{{ customer.name|initials }}</span>
+            <div>
+              <div class="fw-semibold">{{ customer.name }}</div>
+              {% if customer.is_active %}{% status_badge "active" "Active" %}{% else %}{% status_badge "inactive" "Inactive" %}{% endif %}
+            </div>
+          </div>
+          <dl class="detail-list mb-0">
+            <dt>Email</dt><dd>{{ customer.email }}</dd>
+            <dt>Phone</dt><dd>{{ customer.phone|default:"-" }}</dd>
+            <dt>GSTIN / tax ID</dt><dd>{{ customer.tax_id|default:"-" }}</dd>
+            <dt>Address</dt>
+            <dd>{% for line in customer.address_lines %}{{ line }}<br>{% empty %}-{% endfor %}</dd>
+            <dt>Customer since</dt><dd>{{ customer.created_at|date:"d M Y" }}</dd>
+          </dl>
+        </div>
+      </div>
+      <div class="card mb-3">
+        <div class="card-header fw-semibold">{% icon "lock" "me-1" %}Portal access</div>
+        <div class="card-body">
+          {% if customer.has_portal_access %}
+            <p class="mb-0">Signs in as <strong>{{ customer.user.email }}</strong> and sees only their own subscriptions and invoices.</p>
+          {% else %}
+            <p class="text-muted">No portal login yet. When the customer signs up with <strong>{{ customer.email }}</strong> it is linked automatically.</p>
+            {% url 'customers:link_login' customer.pk as link_url %}
+            {% include "partials/_action_form.html" with url=link_url label="Link existing login" icon="refresh" %}
+          {% endif %}
+        </div>
+      </div>
+      {% if customer.notes %}
+        <div class="card"><div class="card-header fw-semibold">Notes</div><div class="card-body">{{ customer.notes|linebreaksbr }}</div></div>
+      {% endif %}
+    </div>
+    <div class="col-lg-8">
+      {% block customer_related %}
+        {% include "partials/_empty_state.html" with icon="repeat" title="No subscriptions yet" text="Subscriptions and invoices for this customer will appear here." %}
+      {% endblock %}
+    </div>
+  </div>
+{% endblock %}

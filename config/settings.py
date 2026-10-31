@@ -41,6 +41,7 @@ ALLOWED_HOSTS = [h.strip() for h in env("DJANGO_ALLOWED_HOSTS", "localhost,127.0
 PROJECT_APPS = [
     "core",
     "accounts",
+    "customers",
 ]
 
 INSTALLED_APPS = [
