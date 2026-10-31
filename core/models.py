@@ -25,3 +25,23 @@ class Sequence(models.Model):
 
     def __str__(self) -> str:
         return f"{self.key} = {self.last_value}"
+
+
+class OutboxEmail(models.Model):
+    """
+    Copy of an email sent while ``EMAIL_BACKEND=outbox`` (the default). Lets
+    you demo password resets, invoices and reminders without a mail server;
+    administrators read them under Email outbox.
+    """
+
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    from_email = models.CharField(max_length=254)
+    to = models.TextField(help_text="Comma-separated recipients.")
+    subject = models.CharField(max_length=255)
+    body = models.TextField()
+
+    class Meta:
+        ordering = ["-created_at", "-pk"]
+
+    def __str__(self) -> str:
+        return self.subject

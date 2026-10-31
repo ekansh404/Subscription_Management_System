@@ -1,9 +1,12 @@
 from django.apps import apps
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.shortcuts import redirect
-from django.views.generic import TemplateView
+from django.views.generic import DetailView, ListView, TemplateView
 
+from .mixins import AdminRequiredMixin
+from .models import OutboxEmail
 from .navigation import menu_for
 
 
@@ -29,6 +32,26 @@ class HomeView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context["modules"] = menu_for(self.request.user)
         return context
+
+
+class OutboxListView(AdminRequiredMixin, ListView):
+    """Emails the app has sent while EMAIL_BACKEND=outbox (demo / offline mode)."""
+
+    model = OutboxEmail
+    template_name = "core/outbox_list.html"
+    context_object_name = "emails"
+    paginate_by = settings.PAGINATE_BY
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["outbox_active"] = settings.EMAIL_BACKEND == "core.mail.OutboxEmailBackend"
+        return context
+
+
+class OutboxDetailView(AdminRequiredMixin, DetailView):
+    model = OutboxEmail
+    template_name = "core/outbox_detail.html"
+    context_object_name = "email"
 
 
 def healthcheck(request):

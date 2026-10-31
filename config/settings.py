@@ -149,7 +149,10 @@ if "test" in sys.argv[1:2]:
 # ---------------------------------------------------------------------------
 # Email (password reset links, invoice sending)
 # ---------------------------------------------------------------------------
-if env("EMAIL_BACKEND", "console") == "smtp":
+# EMAIL_BACKEND: "outbox" (default: stored in the database and shown under Email outbox,
+# works offline), "console" (printed in the terminal) or "smtp" (real delivery, e.g. Brevo).
+_email_backend = env("EMAIL_BACKEND", "outbox").strip().lower()
+if _email_backend == "smtp":
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
     EMAIL_HOST = env("EMAIL_HOST")
     EMAIL_PORT = int(env("EMAIL_PORT", "587"))
@@ -157,8 +160,10 @@ if env("EMAIL_BACKEND", "console") == "smtp":
     EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
     EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
     EMAIL_TIMEOUT = int(env("EMAIL_TIMEOUT", "10"))  # seconds; a slow mail server must not hang a page
-else:
+elif _email_backend == "console":
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+else:
+    EMAIL_BACKEND = "core.mail.OutboxEmailBackend"
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", "billing@brightloop.local")
 
 # ---------------------------------------------------------------------------

@@ -1,5 +1,7 @@
 from django.apps import AppConfig
 
+from .navigation import ADMIN, MenuItem
+
 
 class CoreConfig(AppConfig):
     """Foundation app: base layout, shared models, navigation registry, helpers."""
@@ -8,5 +10,4 @@ class CoreConfig(AppConfig):
     name = "core"
     verbose_name = "Core"
 
-    # Core has no navigation entries of its own; the brand link goes home.
-    menu = ()
+    menu = (MenuItem("Email outbox", "core:outbox", icon="mail", roles=(ADMIN,), order=97, match="core:outbox"),)

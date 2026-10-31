@@ -1,3 +1,5 @@
+import io
+from contextlib import redirect_stdout
 from datetime import date
 from decimal import Decimal
 
@@ -52,3 +54,28 @@ class HomeViewTests(TestCase):
     def test_healthcheck(self):
         response = self.client.get(reverse("core:healthcheck"))
         self.assertEqual(response.json(), {"status": "ok"})
+
+
+class OutboxTests(TestCase):
+    def test_outbox_backend_stores_and_admin_reads_emails(self):
+        from django.core.mail import get_connection, send_mail
+
+        from accounts.tests import make_user
+
+        from .models import OutboxEmail
+
+        with redirect_stdout(io.StringIO()):  # the outbox also prints to the terminal
+            connection = get_connection("core.mail.OutboxEmailBackend")
+            send_mail("Reset your password", "Open http://testserver/reset/abc/ to continue.", "billing@example.com",
+                          ["asha@example.com"], connection=connection)
+        email = OutboxEmail.objects.get()
+        self.assertEqual(email.to, "asha@example.com")
+
+        admin = make_user("admin@example.com", role="admin")
+        staff = make_user("staff@example.com", role="staff")
+        self.client.force_login(staff)
+        self.assertEqual(self.client.get(reverse("core:outbox")).status_code, 403)
+        self.client.force_login(admin)
+        self.assertContains(self.client.get(reverse("core:outbox")), "Reset your password")
+        page = self.client.get(reverse("core:outbox_detail", args=[email.pk]))
+        self.assertContains(page, '<a href="http://testserver/reset/abc/"', html=False)
