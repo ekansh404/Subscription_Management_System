@@ -27,11 +27,19 @@ class MenuItem:
     icon: str = "circle"  # key in core.icons.ICONS
     roles: tuple[str, ...] = (ADMIN, STAFF)
     order: int = 50
+    # Highlight this entry for every URL name starting with ``match``
+    # (e.g. "catalog:plan"); defaults to the whole URL namespace.
+    match: str = ""
 
     @property
     def namespace(self) -> str:
         """URL namespace used to highlight the active sidebar entry."""
         return self.url_name.split(":", 1)[0]
+
+    def is_active_for(self, view_name: str) -> bool:
+        if self.match:
+            return view_name.startswith(self.match)
+        return view_name.split(":", 1)[0] == self.namespace
 
     def visible_to(self, user) -> bool:
         return getattr(user, "role", None) in self.roles

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}Attributes{% endblock %}
+{% block topbar_title %}Attributes{% endblock %}
+{% block page_title %}Product attributes{% endblock %}
+{% block page_subtitle %}Dimensions products are offered in. Each value can add to the price (Brand: Odoo +560).{% endblock %}
+{% block page_actions %}<a href="{% url 'catalog:attribute_create' %}" class="btn btn-primary btn-sm">{% icon "plus" "me-1" %}New attribute</a>{% endblock %}
+{% block content %}
+  {% if attributes %}
+    <div class="row g-3">
+      {% for attribute in attributes %}
+        <div class="col-md-6 col-xl-4">
+          <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span class="fw-semibold">{{ attribute.name }}</span>
+              <a href="{% url 'catalog:attribute_update' attribute.pk %}" class="btn btn-light btn-sm">{% icon "pencil" %}</a>
+            </div>
+            <ul class="list-group list-group-flush">
+              {% for value in attribute.values.all %}
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>{{ value.name }}</span>
+                  <span class="text-muted">{% if value.price_extra %}+{{ value.price_extra|money }}{% else %}no extra{% endif %}</span>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    {% url 'catalog:attribute_create' as create_url %}
+    {% include "partials/_empty_state.html" with icon="sliders" title="No attributes yet" text="Create Brand with the values Odoo (+560) and Generic." cta_url=create_url cta_label="New attribute" %}
+  {% endif %}
+{% endblock %}

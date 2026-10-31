@@ -13,4 +13,5 @@ def app_context(request):
         "currency_code": settings.CURRENCY_CODE,
         "menu_items": menu_for(user),
         "current_namespace": resolver_match.namespace if resolver_match else "",
+        "current_view_name": resolver_match.view_name if resolver_match else "",
     }

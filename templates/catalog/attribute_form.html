@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{% if object %}Edit {{ object.name }}{% else %}New attribute{% endif %}{% endblock %}
+{% block topbar_title %}Attributes{% endblock %}
+{% block page_title %}{% if object %}Edit attribute{% else %}New attribute{% endif %}{% endblock %}
+{% block page_subtitle %}Values and the price each one adds. Products using this attribute are re-priced on save.{% endblock %}
+{% block content %}
+  <div class="row"><div class="col-xl-8">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="card mb-3"><div class="card-body">{% include "partials/_form_fields.html" with form=form %}</div></div>
+      <div class="card mb-3" data-formset data-prefix="{{ formset.prefix }}">
+        <div class="card-header fw-semibold">Values</div>
+        <div class="card-body p-0">
+          {{ formset.management_form }}
+          {% if formset.non_form_errors %}<div class="alert alert-danger m-3">{{ formset.non_form_errors }}</div>{% endif %}
+          <div class="table-responsive"><table class="table align-middle mb-0">
+            <thead><tr><th>Value</th><th style="width:11rem">Price extra</th><th style="width:7rem">Order</th><th class="actions-cell"></th></tr></thead>
+            <tbody data-formset-body>
+              {% for value_form in formset %}
+                <tr class="formset-row">
+                  {% for hidden in value_form.hidden_fields %}{{ hidden }}{% endfor %}
+                  <td>{{ value_form.name }}{% for e in value_form.name.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}{% for e in value_form.non_field_errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</td>
+                  <td>{{ value_form.price_extra }}</td>
+                  <td>{{ value_form.sequence }}</td>
+                  <td class="actions-cell"><span class="d-none">{{ value_form.DELETE }}</span><button type="button" class="btn btn-light btn-sm" data-formset-remove title="Remove">{% icon "trash" %}</button></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table></div>
+          <template data-formset-empty>
+            <tr class="formset-row">
+              {% for hidden in formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
+              <td>{{ formset.empty_form.name }}</td><td>{{ formset.empty_form.price_extra }}</td><td>{{ formset.empty_form.sequence }}</td>
+              <td class="actions-cell"><span class="d-none">{{ formset.empty_form.DELETE }}</span><button type="button" class="btn btn-light btn-sm" data-formset-remove>{% icon "trash" %}</button></td>
+            </tr>
+          </template>
+          <div class="p-3"><button type="button" class="btn btn-outline-primary btn-sm" data-formset-add>{% icon "plus" "me-1" %}Add value</button></div>
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">{% icon "check" "me-1" %}Save attribute</button>
+        <a href="{% url 'catalog:attribute_list' %}" class="btn btn-light">Cancel</a>
+      </div>
+    </form>
+  </div></div>
+{% endblock %}

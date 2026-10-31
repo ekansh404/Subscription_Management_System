@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ plan.name }}{% endblock %}
+{% block topbar_title %}Plans{% endblock %}
+{% block page_title %}{{ plan.name }}{% endblock %}
+{% block page_subtitle %}{{ plan.price|money }} {{ plan.get_billing_period_display|lower }} · ≈ {{ plan.monthly_price|money }} per month{% endblock %}
+{% block page_actions %}{% if user.is_admin %}<a href="{% url 'catalog:plan_update' plan.pk %}" class="btn btn-light btn-sm">{% icon "pencil" "me-1" %}Edit</a>{% endif %}{% endblock %}
+{% block content %}
+  <div class="row g-3">
+    <div class="col-lg-5">
+      <div class="card mb-3"><div class="card-body">
+        <dl class="detail-list">
+          <dt>Status</dt><dd>{% if plan.is_available %}{% status_badge "available" "Available" %}{% elif plan.is_active %}{% status_badge "expired" "Out of window" %}{% else %}{% status_badge "inactive" "Inactive" %}{% endif %}</dd>
+          <dt>Price per period</dt><dd>{{ plan.price|money }}</dd>
+          <dt>Billing period</dt><dd>{{ plan.get_billing_period_display }}</dd>
+          <dt>Minimum quantity</dt><dd>{{ plan.min_quantity }}</dd>
+          <dt>Default product</dt><dd>{% if plan.product %}<a href="{{ plan.product.product.get_absolute_url }}">{{ plan.product }}</a>{% else %}-{% endif %}</dd>
+          <dt>Available from</dt><dd>{{ plan.start_date|date:"d M Y"|default:"Any time" }}</dd>
+          <dt>Available until</dt><dd>{{ plan.end_date|date:"d M Y"|default:"No end date" }}</dd>
+        </dl>
+      </div></div>
+      {% if plan.description %}<div class="card"><div class="card-body">{{ plan.description|linebreaksbr }}</div></div>{% endif %}
+    </div>
+    <div class="col-lg-7">
+      <div class="card"><div class="card-header fw-semibold">Lifecycle rules</div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item d-flex justify-content-between">Close automatically at expiry <span>{% if plan.auto_close %}{% icon "check-circle" "text-success" %}{% else %}{% icon "x-circle" "text-muted" %}{% endif %}</span></li>
+          <li class="list-group-item d-flex justify-content-between">Can be closed early <span>{% if plan.closable %}{% icon "check-circle" "text-success" %}{% else %}{% icon "x-circle" "text-muted" %}{% endif %}</span></li>
+          <li class="list-group-item d-flex justify-content-between">Can be paused <span>{% if plan.pausable %}{% icon "check-circle" "text-success" %}{% else %}{% icon "x-circle" "text-muted" %}{% endif %}</span></li>
+          <li class="list-group-item d-flex justify-content-between">Can be renewed <span>{% if plan.renewable %}{% icon "check-circle" "text-success" %}{% else %}{% icon "x-circle" "text-muted" %}{% endif %}</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+{% endblock %}

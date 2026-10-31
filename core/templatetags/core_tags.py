@@ -98,3 +98,9 @@ def subtract(value, arg):
         return Decimal(str(value)) - Decimal(str(arg))
     except (InvalidOperation, ValueError, TypeError):
         return ""
+
+
+@register.filter
+def menu_active(item, view_name):
+    """``{% if item|menu_active:current_view_name %}`` - sidebar highlighting."""
+    return item.is_active_for(view_name or "")
