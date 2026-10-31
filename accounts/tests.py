@@ -132,3 +132,11 @@ class StaffManagementTests(TestCase):
     def test_superuser_has_admin_role(self):
         self.assertEqual(self.admin.role, Role.ADMIN)
         self.assertTrue(self.admin.is_staff)
+
+
+class ResetEmailBrandingTests(TestCase):
+    def test_reset_email_uses_app_name_not_host(self):
+        make_user("asha@example.com")
+        self.client.post(reverse("accounts:password_reset"), {"email": "asha@example.com"})
+        self.assertIn("Brightloop", mail.outbox[0].subject)
+        self.assertNotIn("testserver", mail.outbox[0].subject)

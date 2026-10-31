@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}Email outbox{% endblock %}
+{% block topbar_title %}Email outbox{% endblock %}
+{% block page_title %}Email outbox{% endblock %}
+{% block page_subtitle %}Every email the app sends (password resets, invoices, reminders), kept here so the system works without a mail server.{% endblock %}
+{% block content %}
+  {% if not outbox_active %}
+    <div class="alert alert-info">Emails are currently delivered by a real mail server (<code>EMAIL_BACKEND</code> is not <code>outbox</code>), so new messages are not stored here.</div>
+  {% endif %}
+  <div class="card table-card"><div class="card-body p-0">
+    {% if emails %}
+      <div class="table-responsive"><table class="table table-hover align-middle">
+        <thead><tr><th>Sent</th><th>To</th><th>Subject</th></tr></thead>
+        <tbody>
+          {% for email in emails %}
+            <tr>
+              <td class="text-nowrap">{{ email.created_at|date:"d M Y, H:i" }}</td>
+              <td>{{ email.to }}</td>
+              <td><a href="{% url 'core:outbox_detail' email.pk %}" class="row-link">{{ email.subject }}</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table></div>
+    {% else %}
+      {% include "partials/_empty_state.html" with icon="mail" title="No emails yet" text="Try Forgot password on the sign-in page, or send an invoice by email." %}
+    {% endif %}
+  </div></div>
+  {% include "partials/_pagination.html" %}
+{% endblock %}

@@ -100,18 +100,20 @@ python manage.py seed_demo --reset --subscriptions 3000 --customers 400 --months
 Measured locally with that data set (3 000 subscriptions, ~4 800 invoices, ~3 400 payments): dashboard
 ~230 ms, subscription and invoice lists under 70 ms, receivables ~60 ms.
 
-## Real email (optional)
+## Email
 
-Emails (password reset links, invoices, overdue reminders) print in the `runserver` terminal by
-default, so the app works fully offline. To deliver them for real, copy `.env.example` to `.env`
-and fill in the SMTP block (Brevo, Gmail or any SMTP provider), then check it:
+By default (`EMAIL_BACKEND=outbox`) every email the app sends, including password reset links,
+invoices and overdue reminders, is stored in the database and shown to administrators under
+**Email outbox** (and printed in the terminal), so the whole flow can be demoed offline.
+
+For real delivery, copy `.env.example` to `.env`, set `EMAIL_BACKEND=smtp` and fill in the SMTP
+values (Brevo, Gmail or any provider), then check it:
 
 ```bash
 python manage.py sendtestemail you@example.com
 ```
 
-If the mail server is unreachable the page shows an error message instead of failing; switch
-`EMAIL_BACKEND` back to `console` to demo without internet.
+If the mail server is unreachable the page shows an error message instead of failing.
 
 ## How the brief maps to the product
 
