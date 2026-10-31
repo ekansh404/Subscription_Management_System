@@ -259,3 +259,4 @@ h1, h2, h3, .h4, .h5 { letter-spacing: -0.015em; }
 .footer-credit strong { color: var(--bl-text); font-weight: 650; }
 .footer-credit .dot { color: var(--bl-accent); }
 .outbox-body { white-space: pre-wrap; font-size: 0.9rem; background: var(--bl-surface-muted); border: 1px solid var(--bl-border); border-radius: 0.6rem; padding: 1rem; }
+.invoice-doc td.text-end, .invoice-doc th.text-end, .totals dd { white-space: nowrap; }

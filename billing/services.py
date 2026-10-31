@@ -17,11 +17,13 @@ from dataclasses import dataclass, field
 from datetime import date, timedelta
 from decimal import Decimal
 
+from django.apps import apps
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import IntegrityError, transaction
 from django.db.models import F, Q
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils import timezone
 
 from core.sequences import next_number
@@ -301,7 +303,11 @@ def send_invoice(invoice: Invoice, request=None) -> Invoice:
         raise BillingError("A cancelled invoice cannot be sent.")
     if invoice.status == InvoiceStatus.DRAFT:
         confirm_invoice(invoice)
-    link = request.build_absolute_uri(invoice.get_absolute_url()) if request else ""
+    link = ""
+    if request is not None:
+        # The customer's own copy lives in the portal; the staff page would answer 403.
+        path = reverse("portal:invoice_detail", args=[invoice.pk]) if apps.is_installed("portal") else invoice.get_absolute_url()
+        link = request.build_absolute_uri(path)
     body = render_to_string("billing/invoice_email.txt", {"invoice": invoice, "link": link, "app_name": settings.APP_NAME})
     try:
         send_mail(

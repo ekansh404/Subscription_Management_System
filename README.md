@@ -1,164 +1,146 @@
 # Brightloop · Subscription Management System
 
-One place to run plans, subscriptions and recurring billing: products with variants, plans,
+[![CI](https://github.com/ekansh404/Subscription_Management_System/actions/workflows/ci.yml/badge.svg)](https://github.com/ekansh404/Subscription_Management_System/actions/workflows/ci.yml)
+
+One system to run a subscription business end to end: products with variants, recurring plans,
 quotations, subscriptions with a real lifecycle, automatic invoicing with taxes and discounts,
-payments, a customer portal and a finance dashboard.
+payments, a customer self-service portal and a live finance dashboard.
 
-Built for the **Odoo x FLUX Lucknow Hackathon '26** (problem statement: *Subscription Management System*).
+| | |
+| --- | --- |
+| **Built by** | **Ekansh Chaurasiya** (solo) |
+| **Event** | Odoo x FLUX Lucknow Hackathon '26 · problem statement *Subscription Management System* |
+| **Demo video** | _add the video link here_ |
+| **Stack** | Python · Django 6 · SQLite / PostgreSQL · Django REST Framework · Bootstrap 5 · Chart.js |
 
-## Stack
+![Finance dashboard](docs/screenshots/dashboard.jpg)
 
-| Layer | Choice | Why |
-| --- | --- | --- |
-| Backend | Python 3.12+ · Django 6 | Batteries included: ORM + migrations, auth, forms with validation, admin, tests. Odoo-friendly Python. |
-| Database | SQLite (default) · PostgreSQL via `DATABASE_URL` | Zero-setup local database; swap to Postgres with one env var. |
-| Frontend | Django templates · Bootstrap 5 (vendored) · vanilla JS | Responsive, consistent UI with no build step and no CDN dependency (works offline). |
-| API | Django REST Framework (read-only JSON API) | Lets other tools read subscriptions, invoices and KPIs. |
-| Charts | Chart.js (vendored) | Dashboard revenue and status charts. |
+| Subscription lifecycle | Generated invoice |
+| --- | --- |
+| ![Subscription](docs/screenshots/subscription.jpg) | ![Invoice](docs/screenshots/invoice.jpg) |
+| **Receivables (overdue first)** | **Customer portal** |
+| ![Receivables](docs/screenshots/receivables.jpg) | ![Portal](docs/screenshots/portal.jpg) |
 
-No static JSON: every screen reads and writes the database.
+## At a glance
 
-## Quick start (Windows / macOS / Linux)
+| | |
+| --- | --- |
+| Business areas | 9 Django apps: accounts, customers, catalog, subscriptions, billing, payments, portal, reports, api |
+| Automated tests | **87**, run by GitHub Actions on every push |
+| Load test | 3,000 subscriptions · 4,853 invoices · 3,456 payments: dashboard ~230 ms, lists < 100 ms (target: < 2 s) |
+| Data | Real database only, no static JSON; `seed_demo` builds 6 months of realistic data through the real business rules |
+| Offline | Bootstrap, Chart.js and fonts are bundled in the repo; email works offline through the built-in outbox |
 
-```bash
+## Quick start
+
+Windows (PowerShell):
+
+```powershell
 git clone https://github.com/ekansh404/Subscription_Management_System.git
 cd Subscription_Management_System
-
-# 1. virtual environment
-python -m venv .venv
-.venv\Scripts\activate          # Windows (PowerShell / cmd)
-# source .venv/bin/activate     # macOS / Linux
-
-# 2. dependencies
+py -3 -m venv .venv
+.\.venv\Scripts\Activate.ps1          # if blocked: Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 pip install -r requirements.txt
-
-# 3. database + first administrator
 python manage.py migrate
-python manage.py createsuperuser   # creates an Administrator (role=admin)
-
-# 4. run
-python manage.py runserver
+python manage.py seed_demo --reset     # demo data + the logins below
+python manage.py runserver             # open http://127.0.0.1:8000
 ```
 
-Open http://127.0.0.1:8000 and sign in. Customers create their own account at `/accounts/signup/`.
+macOS / Linux: the same, with `python3 -m venv .venv` and `source .venv/bin/activate`.
+Add your own administrator any time with `python manage.py createsuperuser`.
 
-> On Windows, if `python` is not found, use `py -3 -m venv .venv` and `py manage.py ...`.
+### Demo logins
 
-Optional: copy `.env.example` to `.env` to change the secret key, database, email backend or branding.
-Password-reset emails are printed to the terminal in development (console email backend).
+| Role | Email | Password | Sees |
+| --- | --- | --- | --- |
+| Administrator | `admin@brightloop.com` | `Admin#12345` | Everything, including staff, taxes, attributes, discounts, REST API, email outbox |
+| Staff | `staff@brightloop.com` | `Staff#12345` | Customers, quotations, subscriptions, invoices, payments, reports |
+| Staff (finance) | `finance@brightloop.com` | `Finance#12345` | Same as staff |
+| Customer | `customer1@example.com` … `customer10@example.com` | `Customer#12345` | Portal: only their own subscriptions, invoices and payments |
 
-## Roles
+## What it does (mapped to the problem statement)
 
-| Role | Who | Can |
-| --- | --- | --- |
-| Administrator | Brightloop owner | Everything, plus: add staff, manage products/plans/taxes/discounts |
-| Staff | Internal team | Customers, quotations, subscriptions, invoices, payments, reports |
-| Customer | Self sign-up | Portal: only their own subscriptions and invoices |
+| Scene in the brief | What Brightloop does |
+| --- | --- |
+| **A new customer signs up** | Email + password sign-up; one account per email; password must be > 8 characters with upper, lower and special character; reset link by email. Three roles (admin, staff, customer); only the admin adds staff. |
+| **Launching a new plan** | Products with type, sales price, cost price, notes and taxes. Variants generated from attribute values (Brand: **Odoo adds ₹560**). Plans with price, billing period (daily / weekly / monthly / yearly), minimum quantity, availability dates and per-plan rules: auto-close, close early, pause, renew. |
+| **Turning a quote into a subscription** | Quotation templates (plan, lines, payment terms, validity in days, contract length). Subscriptions numbered `SUB-00001` with customer, plan, start/expiry, payment terms and lines with taxes. Draft → Quotation → Confirmed → Active → Closed, with a status stepper and timeline. |
+| **Billing day** | Invoices generated from subscriptions with customer snapshot, lines, taxes and totals (`INV/2026/00001`). Confirm, cancel, send by email, print / save as PDF. Draft → Confirmed → Paid. The billing run (page or `manage.py run_billing`) catches up every due period and never bills twice. |
+| **A customer asks for a better price** | Admin-only discount rules: fixed or %, minimum purchase or quantity, start/end dates, usage limit, for specific products or whole subscriptions. Applied to the next invoices automatically; stops when expired or used up. |
+| **The money comes in** | Payments with method, amount, date, reference and note; partial payments; overpayment refused. Paid / outstanding / overdue per invoice; receivables grouped by age with one-click reminders. |
+| **Customers manage their own subscriptions** | Portal: accept quotations, pause / resume / renew / cancel when the plan allows, download invoices, see payments. |
+| **The finance lead** | Dashboard: active subscriptions, MRR / ARR, invoiced, collected, outstanding, overdue, new and churned, with charts and filters (dates, plan, customer). Revenue report with CSV export. Read-only REST API at `/api/`. |
 
-Only an administrator can add staff (`Staff` in the sidebar). Customers sign up with an email
-(unique) and a password of more than 8 characters containing an uppercase letter, a lowercase
-letter and a special character. Forgotten passwords are reset through an emailed link.
+## Why it is robust
+
+* **Nothing billed twice, nothing skipped**: a partial unique index allows one live invoice per
+  subscription period; billing locks the subscription row, checks again and moves the next
+  billing date forward. Running the billing run twice creates zero new invoices.
+* **History never changes**: invoices store the customer details, prices, discounts and tax rates
+  they were issued with.
+* **Unique numbering**: document numbers come from a row-locked counter.
+* **Data stays private**: every view checks the role (403); every portal and API query is scoped to
+  the signed-in customer (404 for anyone else's records). Redirects only stay on the site.
+* **Validation in three layers**: model validators, form `clean()` and business-rule checks (dates,
+  quotation expiry, plan availability, minimum quantity, overpayment, password policy, unique emails).
+* **Fails gracefully**: if the mail server is down, the page shows a message instead of an error.
+* **One rule, one place**: business rules live in each app's `services.py`, which views, the portal,
+  the API and the commands all call; 87 tests exercise them.
+
+## Email
+
+`EMAIL_BACKEND=outbox` (default) stores every email (password resets, invoices, reminders) and shows
+it to administrators under **Email outbox**, so everything can be tried offline. For real delivery
+copy `.env.example` to `.env`, set `EMAIL_BACKEND=smtp` and the SMTP values (Brevo, Gmail or any
+provider), then check with `python manage.py sendtestemail you@example.com`.
+
+## Hackathon guidelines
+
+| Guideline | How it is met |
+| --- | --- |
+| Real-time / dynamic data, no static JSON | Every screen reads and writes the database; the dashboard is computed on each request |
+| Responsive, clean UI with a consistent colour scheme | One design system (CSS variables, two bundled fonts), tested down to phone width |
+| Robust input validation | Model, form and service-level checks, covered by tests |
+| Intuitive navigation | Role-filtered sidebar with active-section highlight, status tabs, page actions in one place |
+| Proper version control | Built in staged pull requests with descriptive commits; CI on every push |
+| Backend APIs, data modelling, local database | REST API, ~20 models with constraints and indexes, SQLite (PostgreSQL via `DATABASE_URL`) |
+| Offline / local first | No CDN; fonts, CSS and JS bundled; email outbox works without internet |
+| Technology only where it adds value | No gimmicks: deterministic, tested business rules; DRF, Chart.js and CI each solve a real need |
 
 ## Project layout
 
 ```
-config/          settings, root URL loop (every app in PROJECT_APPS is mounted at /<app>/)
-core/            base layout, theme, navigation registry, role mixins, numbering, date math
-accounts/        email-login user model, roles, signup/login/reset, staff management
-customers/       customer records (linked to portal accounts)
-catalog/         taxes, products + variants (attribute price extras), plans (billing periods)
-subscriptions/   quotation templates, subscriptions with lines and lifecycle
-billing/         discounts, invoices (auto-generated from subscriptions), billing run
-payments/        payment recording, outstanding / overdue tracking
+config/          settings (environment-driven), URL loop that mounts every app at /<app>/
+core/            layout, theme, navigation registry, role mixins, numbering, date maths, email outbox
+accounts/        email login, roles, sign-up, password policy and reset, staff management
+customers/       customer records linked to portal logins
+catalog/         taxes, attributes, products + generated variants, plans
+subscriptions/   quotation templates, subscriptions, lines, lifecycle, timeline
+billing/         discounts, invoices, billing run (`manage.py run_billing`)
+payments/        payments, receivables, reminders
 portal/          customer self-service
-reports/         finance dashboard with filters and charts
+reports/         finance dashboard, revenue report, CSV
 api/             read-only REST API
-templates/       one folder per app, shared partials in templates/partials/
-static/          app.css (theme), app.js (behaviours), vendored Bootstrap + Chart.js
+docs/            architecture, assumptions, demo script, screenshots
 ```
-
-## Demo data
-
-```bash
-python manage.py seed_demo --reset     # 25 customers, 60 subscriptions, 6 months of invoices and payments
-python manage.py runserver
-```
-
-| Login | Password | Sees |
-| --- | --- | --- |
-| `admin@brightloop.com` | `Admin#12345` | everything, including staff, taxes, attributes, discounts, API |
-| `staff@brightloop.com` / `finance@brightloop.com` | `Staff#12345` / `Finance#12345` | day-to-day work and reports |
-| `customer1@example.com` … `customer10@example.com` | `Customer#12345` | the customer portal (own data only) |
-
-Your own `createsuperuser` login is kept by `--reset`. Load test (the brief asks for pages under two
-seconds with thousands of subscriptions):
-
-```bash
-python manage.py seed_demo --reset --subscriptions 3000 --customers 400 --months-back 2   # ~2 minutes
-```
-
-Measured locally with that data set (3 000 subscriptions, ~4 800 invoices, ~3 400 payments): dashboard
-~230 ms, subscription and invoice lists under 70 ms, receivables ~60 ms.
-
-## Email
-
-By default (`EMAIL_BACKEND=outbox`) every email the app sends, including password reset links,
-invoices and overdue reminders, is stored in the database and shown to administrators under
-**Email outbox** (and printed in the terminal), so the whole flow can be demoed offline.
-
-For real delivery, copy `.env.example` to `.env`, set `EMAIL_BACKEND=smtp` and fill in the SMTP
-values (Brevo, Gmail or any provider), then check it:
-
-```bash
-python manage.py sendtestemail you@example.com
-```
-
-If the mail server is unreachable the page shows an error message instead of failing.
-
-## How the brief maps to the product
-
-| Scene in the problem statement | Where |
-| --- | --- |
-| A new customer signs up (unique email, password policy, reset link, roles, only admin adds staff) | `accounts`, `core/mixins.py` |
-| Launching a new plan (product type/prices/notes, variants such as Brand: Odoo +560, plans with period, min quantity, availability, auto-close/close/pause/renew) | `catalog` |
-| Turning a quote into a subscription (templates with validity, number, customer, plan, dates, payment terms, lines with taxes, Draft → Quotation → Confirmed → Active → Closed) | `subscriptions` |
-| Billing day (invoices generated with customer, lines, taxes, totals; confirm/cancel/send/print; Draft → Confirmed → Paid; nothing billed twice or skipped) | `billing` (+ `manage.py run_billing`) |
-| A customer asks for a better price (admin-only discount rules: fixed/%, min purchase/quantity, dates, usage limit, product or subscription scope, applied automatically) | `billing` (discounts) |
-| The money comes in (method, amount, date, note; paid vs outstanding vs overdue) | `payments` (payments, receivables) |
-| Customers manage their own subscriptions | `portal` |
-| The finance lead (active subscriptions, revenue, payments, overdue; filters; summary; fast) | `reports`, `api` |
-
-More detail: [`docs/architecture.md`](docs/architecture.md) (how it is built and why),
-[`docs/assumptions.md`](docs/assumptions.md) (decisions where the brief left room) and
-[`docs/demo_script.md`](docs/demo_script.md) (the walkthrough used for the video).
 
 ## Development
 
 ```bash
-python manage.py test              # 80+ tests: business rules (services) and views per app
-python manage.py check             # Django system checks
-python manage.py makemigrations    # after changing models
-python manage.py run_billing       # billing day; schedule it daily (cron / Task Scheduler)
+python manage.py test        # 87 tests
+python manage.py check       # Django system checks
+python manage.py run_billing # billing day; schedule it daily in production
 ```
 
-Continuous integration (GitHub Actions) runs checks, verifies migrations are committed and runs
-the tests on every push.
+More detail: [architecture](docs/architecture.md) · [assumptions](docs/assumptions.md) ·
+[demo script](docs/demo_script.md).
 
-## Roadmap (hackathon build log)
+Next steps: proration for mid-period changes, multi-currency, online payments with webhooks,
+automatic dunning, PostgreSQL and a scheduler in production.
 
-- [x] Stage 1 · Project scaffold, theme, email login, roles, password policy & reset, staff management
-- [x] Stage 2 · Customers
-- [x] Stage 3 · Catalog: taxes, products with variants, plans
-- [x] Stage 4 · Quotation templates & subscriptions with lifecycle
-- [x] Stage 5 · Discounts & invoices, billing run
-- [x] Stage 6 · Payments, outstanding/overdue tracking, customer portal
-- [x] Stage 7 · Finance dashboard, REST API, demo data
-- [x] Stage 8 · Polish, documentation, final tests
-
-Next steps we would take: proration when quantities change mid-period, multi-currency, an online
-payment gateway with webhooks (e.g. Razorpay) to record payments automatically, automatic dunning
-reminders, PostgreSQL in production and a scheduler (Celery beat / cron) for the nightly billing run.
+Developed in staged pull requests with AI-assisted pair programming (Claude Code); every business
+rule is covered by automated tests.
 
 ## License
 
-MIT
+MIT · © 2026 Ekansh Chaurasiya

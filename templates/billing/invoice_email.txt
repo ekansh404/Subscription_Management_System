@@ -1,10 +1,10 @@
-Hello {{ invoice.customer_name }},
+{% load core_tags %}Hello {{ invoice.customer_name }},
 
 Please find your {{ app_name }} invoice {{ invoice.number }} dated {{ invoice.invoice_date|date:"d M Y" }}.
 
   Service period: {{ invoice.period_start|date:"d M Y" }} - {{ invoice.period_end|date:"d M Y" }}
-  Total:          {{ invoice.amount_total }}
-  Amount due:     {{ invoice.amount_due }}
+  Total:          {{ invoice.amount_total|money }}
+  Amount due:     {{ invoice.amount_due|money }}
   Due date:       {{ invoice.due_date|date:"d M Y" }}
 {% if link %}
 View it online: {{ link }}
