@@ -218,3 +218,6 @@ LOGGING = {
     "handlers": {"console": {"class": "logging.StreamHandler"}},
     "root": {"handlers": ["console"], "level": "INFO"},
 }
+if "test" in sys.argv[1:2]:
+    # Tests deliberately trigger 403/404 responses; don't print them as tracebacks.
+    LOGGING["loggers"] = {"django.request": {"level": "ERROR"}}
