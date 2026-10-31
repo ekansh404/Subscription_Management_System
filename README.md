@@ -11,8 +11,10 @@ payments, a customer self-service portal and a live finance dashboard.
 | **Built by** | **Ekansh Chaurasiya** (solo) |
 | **Event** | Odoo x FLUX Lucknow Hackathon '26 · problem statement *Subscription Management System* |
 | **Live demo** | **[ekanshchaurasiya.pythonanywhere.com](https://ekanshchaurasiya.pythonanywhere.com)**: sign in with the [demo logins](#demo-logins) below |
-| **Demo video** | _add the video link here_ |
+| **Demo video** | **[▶ Watch on YouTube](https://youtu.be/osQRWMlDtsk)** (3 min walkthrough of every scene in the brief) |
 | **Stack** | Python · Django 6 · SQLite / PostgreSQL · Django REST Framework · Bootstrap 5 · Chart.js |
+
+[![Watch the demo video](https://img.youtube.com/vi/osQRWMlDtsk/maxresdefault.jpg)](https://youtu.be/osQRWMlDtsk)
 
 ![Finance dashboard](docs/screenshots/dashboard.jpg)
 

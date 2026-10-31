@@ -1,5 +1,7 @@
 # Demo script (6–8 minutes)
 
+Recorded demo (3 min): https://youtu.be/osQRWMlDtsk
+
 Prepare: `python manage.py seed_demo --reset`, `python manage.py runserver`, two browser windows
 (normal + private). Follows the problem statement's month at Brightloop, in order.
 
