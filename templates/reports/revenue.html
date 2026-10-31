@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}Revenue report{% endblock %}
+{% block topbar_title %}Revenue report{% endblock %}
+{% block page_title %}Revenue report{% endblock %}
+{% block page_subtitle %}{{ filters.date_from|date:"d M Y" }} – {{ filters.date_to|date:"d M Y" }} · confirmed and paid invoices, payments received.{% endblock %}
+{% block page_actions %}<a href="{% url 'reports:revenue_csv' %}?{{ request.GET.urlencode }}" class="btn btn-primary btn-sm">{% icon "download" "me-1" %}Export CSV</a>{% endblock %}
+{% block content %}
+  <div class="card mb-3"><div class="card-body py-2">{% include "partials/_filter_form.html" with form=filter_form %}</div></div>
+  <div class="card table-card mb-3"><div class="card-body p-0"><div class="table-responsive"><table class="table align-middle mb-0">
+    <thead><tr><th>Month</th><th class="text-end">Invoices</th><th class="text-end">Untaxed</th><th class="text-end">Discounts</th><th class="text-end">Taxes</th><th class="text-end">Invoiced</th><th class="text-end">Collected</th></tr></thead>
+    <tbody>
+      {% for row in rows %}<tr><td>{{ row.month|date:"F Y" }}</td><td class="text-end">{{ row.count }}</td><td class="text-end">{{ row.untaxed|money }}</td><td class="text-end">{{ row.discount|money }}</td><td class="text-end">{{ row.tax|money }}</td><td class="text-end fw-semibold">{{ row.invoiced|money }}</td><td class="text-end">{{ row.collected|money }}</td></tr>{% endfor %}
+    </tbody>
+    <tfoot class="fw-bold"><tr><td>Total</td><td class="text-end">{{ totals.count }}</td><td class="text-end">{{ totals.untaxed|money }}</td><td class="text-end">{{ totals.discount|money }}</td><td class="text-end">{{ totals.tax|money }}</td><td class="text-end">{{ totals.invoiced|money }}</td><td class="text-end">{{ totals.collected|money }}</td></tr></tfoot>
+  </table></div></div></div>
+  <div class="row g-3">
+    <div class="col-lg-6"><div class="card table-card"><div class="card-header fw-semibold">Top plans</div><div class="card-body p-0"><div class="table-responsive"><table class="table align-middle mb-0">
+      <thead><tr><th>Plan</th><th class="text-end">Invoices</th><th class="text-end">Invoiced</th><th class="text-end">Paid</th></tr></thead>
+      <tbody>{% for row in by_plan %}<tr><td>{{ row.subscription__plan__name|default:"(no plan)" }}</td><td class="text-end">{{ row.count }}</td><td class="text-end">{{ row.invoiced|money }}</td><td class="text-end">{{ row.paid|money }}</td></tr>{% empty %}<tr><td colspan="4" class="text-muted text-center py-3">No revenue in this period.</td></tr>{% endfor %}</tbody>
+    </table></div></div></div></div>
+    <div class="col-lg-6"><div class="card table-card"><div class="card-header fw-semibold">Top customers</div><div class="card-body p-0"><div class="table-responsive"><table class="table align-middle mb-0">
+      <thead><tr><th>Customer</th><th class="text-end">Invoices</th><th class="text-end">Invoiced</th><th class="text-end">Paid</th></tr></thead>
+      <tbody>{% for row in by_customer %}<tr><td>{{ row.customer__name }}</td><td class="text-end">{{ row.count }}</td><td class="text-end">{{ row.invoiced|money }}</td><td class="text-end">{{ row.paid|money }}</td></tr>{% empty %}<tr><td colspan="4" class="text-muted text-center py-3">No revenue in this period.</td></tr>{% endfor %}</tbody>
+    </table></div></div></div></div>
+  </div>
+{% endblock %}
