@@ -10,6 +10,7 @@ payments, a customer self-service portal and a live finance dashboard.
 | --- | --- |
 | **Built by** | **Ekansh Chaurasiya** (solo) |
 | **Event** | Odoo x FLUX Lucknow Hackathon '26 · problem statement *Subscription Management System* |
+| **Live demo** | **[ekanshchaurasiya.pythonanywhere.com](https://ekanshchaurasiya.pythonanywhere.com)**: sign in with the [demo logins](#demo-logins) below |
 | **Demo video** | _add the video link here_ |
 | **Stack** | Python · Django 6 · SQLite / PostgreSQL · Django REST Framework · Bootstrap 5 · Chart.js |
 
@@ -52,6 +53,8 @@ Add your own administrator any time with `python manage.py createsuperuser`.
 Free hosting: step-by-step guide for PythonAnywhere in [docs/deploy.md](docs/deploy.md).
 
 ### Demo logins
+
+These work on the [live demo](https://ekanshchaurasiya.pythonanywhere.com) and on a local copy after `python manage.py seed_demo --reset`.
 
 | Role | Email | Password | Sees |
 | --- | --- | --- | --- |
