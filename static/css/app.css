@@ -204,3 +204,17 @@ a:hover { text-decoration: underline; }
   .detail-list { grid-template-columns: 1fr; gap: 0.1rem 0; }
   .detail-list dd { margin-bottom: 0.5rem; }
 }
+
+/* --- line editor, totals, status stepper ---------------------------------- */
+.lines-table select[multiple] { min-height: 2.2rem; height: 2.2rem; }
+.lines-table select[multiple]:focus { height: 5.5rem; position: relative; z-index: 2; }
+.totals { display: grid; grid-template-columns: max-content minmax(8rem, max-content); gap: 0.3rem 1.5rem; text-align: right; }
+.totals dt { color: var(--bl-muted); font-weight: 500; }
+.totals dd { margin: 0; font-weight: 600; }
+.totals .grand { font-size: 1.05rem; color: var(--bl-text, #0f172a); border-top: 1px solid var(--bl-border); padding-top: 0.3rem; }
+.stepper { display: flex; flex-wrap: wrap; gap: 0.25rem; list-style: none; padding: 0; margin: 0 0 1rem; }
+.stepper li { flex: 1 1 0; min-width: 6rem; text-align: center; padding: 0.45rem 0.5rem; font-size: 0.8rem; font-weight: 600; border-radius: 0.5rem; background: #f1f5f9; color: #64748b; }
+.stepper li.done { background: var(--bl-primary-soft); color: var(--bl-primary); }
+.stepper li.current { background: var(--bl-primary); color: #fff; }
+.status-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; }
+.status-tabs a { text-decoration: none; }

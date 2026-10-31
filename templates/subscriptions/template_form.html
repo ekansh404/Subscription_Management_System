@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{% if object %}Edit {{ object.name }}{% else %}New quotation template{% endif %}{% endblock %}
+{% block topbar_title %}Quotation templates{% endblock %}
+{% block page_title %}{% if object %}Edit template{% else %}New quotation template{% endif %}{% endblock %}
+{% block page_subtitle %}Taxes come from each product's default taxes when a subscription is created.{% endblock %}
+{% block content %}
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+    <div class="card mb-3"><div class="card-body"><div class="row">
+      <div class="col-md-6">{% include "partials/_field.html" with field=form.name %}</div>
+      <div class="col-md-6">{% include "partials/_field.html" with field=form.plan %}</div>
+      <div class="col-md-4">{% include "partials/_field.html" with field=form.validity_days %}</div>
+      <div class="col-md-4">{% include "partials/_field.html" with field=form.duration_periods %}</div>
+      <div class="col-md-4">{% include "partials/_field.html" with field=form.payment_term_days %}</div>
+      <div class="col-12">{% include "partials/_field.html" with field=form.notes %}</div>
+      <div class="col-12">{% include "partials/_field.html" with field=form.is_active %}</div>
+    </div></div></div>
+    {% include "partials/_lines_formset.html" with formset=formset show_taxes=False %}
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary">{% icon "check" "me-1" %}Save template</button>
+      <a href="{% url 'subscriptions:template_list' %}" class="btn btn-light">Cancel</a>
+    </div>
+  </form>
+{% endblock %}

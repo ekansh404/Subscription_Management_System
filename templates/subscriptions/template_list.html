@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}Quotation templates{% endblock %}
+{% block topbar_title %}Quotation templates{% endblock %}
+{% block page_title %}Quotation templates{% endblock %}
+{% block page_subtitle %}Ready-made offers: a plan, product lines, payment terms and how long the quote stays valid.{% endblock %}
+{% block page_actions %}{% if user.is_admin %}<a href="{% url 'subscriptions:template_create' %}" class="btn btn-primary btn-sm">{% icon "plus" "me-1" %}New template</a>{% endif %}{% endblock %}
+{% block content %}
+  <div class="card table-card"><div class="card-body p-0">
+    {% if templates %}
+      <div class="table-responsive"><table class="table table-hover align-middle">
+        <thead><tr><th>Template</th><th>Plan</th><th class="text-end">Lines</th><th>Valid for</th><th>Contract</th><th>Payment terms</th><th class="text-end">Used</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for template in templates %}
+            <tr>
+              <td>{% if user.is_admin %}<a href="{% url 'subscriptions:template_update' template.pk %}" class="row-link">{{ template.name }}</a>{% else %}<span class="fw-semibold">{{ template.name }}</span>{% endif %}</td>
+              <td>{{ template.plan }}</td>
+              <td class="text-end">{{ template.line_count }}</td>
+              <td>{{ template.validity_days }} days</td>
+              <td>{% if template.duration_periods %}{{ template.duration_periods }} × {{ template.plan.get_billing_period_display|lower }}{% else %}Open-ended{% endif %}</td>
+              <td>{{ template.get_payment_term_days_display }}</td>
+              <td class="text-end">{{ template.use_count }}</td>
+              <td>{% if template.is_active %}{% status_badge "active" "Active" %}{% else %}{% status_badge "inactive" "Inactive" %}{% endif %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table></div>
+    {% else %}
+      {% include "partials/_empty_state.html" with icon="clipboard" title="No quotation templates yet" text="Administrators prepare templates so sales can quote in seconds." %}
+    {% endif %}
+  </div></div>
+{% endblock %}

@@ -127,6 +127,11 @@ class ProductVariant(models.Model):
         return self.product.sales_price + self.price_extra
 
     @property
+    def tax_ids(self) -> str:
+        """Comma-separated default tax ids (read by the line editor script)."""
+        return ",".join(str(tax.pk) for tax in self.product.taxes.all())
+
+    @property
     def tax_rate(self) -> Decimal:
         return sum((tax.rate for tax in self.product.taxes.all()), Decimal("0"))
 

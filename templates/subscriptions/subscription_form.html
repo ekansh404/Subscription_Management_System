@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{% if object %}Edit {{ object.number }}{% else %}New subscription{% endif %}{% endblock %}
+{% block topbar_title %}Subscriptions{% endblock %}
+{% block page_title %}{% if object %}Edit {{ object.number }}{% else %}New subscription{% endif %}{% endblock %}
+{% block page_subtitle %}Lines without a product use the plan's default product at the plan price and minimum quantity.{% endblock %}
+{% block content %}
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+    <div class="card mb-3"><div class="card-body"><div class="row">
+      <div class="col-md-6">{% include "partials/_field.html" with field=form.customer %}</div>
+      <div class="col-md-6">{% include "partials/_field.html" with field=form.plan %}</div>
+      <div class="col-md-3">{% include "partials/_field.html" with field=form.start_date %}</div>
+      <div class="col-md-3">{% include "partials/_field.html" with field=form.expiry_date %}</div>
+      <div class="col-md-3">{% include "partials/_field.html" with field=form.payment_term_days %}</div>
+      <div class="col-md-3">{% include "partials/_field.html" with field=form.salesperson %}</div>
+      <div class="col-12">{% include "partials/_field.html" with field=form.notes %}</div>
+    </div></div></div>
+    {% include "partials/_lines_formset.html" with formset=formset show_taxes=True period_label="period" %}
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary">{% icon "check" "me-1" %}Save</button>
+      <a href="{% if object %}{{ object.get_absolute_url }}{% else %}{% url 'subscriptions:subscription_list' %}{% endif %}" class="btn btn-light">Cancel</a>
+    </div>
+  </form>
+{% endblock %}

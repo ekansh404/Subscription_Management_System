@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}Subscriptions{% endblock %}
+{% block topbar_title %}Subscriptions{% endblock %}
+{% block page_title %}Subscriptions{% endblock %}
+{% block page_subtitle %}Every quotation and subscription, and exactly where it stands.{% endblock %}
+{% block page_actions %}
+  <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#from-template">{% icon "clipboard" "me-1" %}From template</button>
+  <a href="{% url 'subscriptions:subscription_create' %}" class="btn btn-primary btn-sm">{% icon "plus" "me-1" %}New subscription</a>
+{% endblock %}
+{% block content %}
+  <div class="collapse mb-3" id="from-template">
+    <div class="card"><div class="card-body">
+      <form method="post" action="{% url 'subscriptions:subscription_from_template' %}" class="row g-2 align-items-end">
+        {% csrf_token %}
+        <div class="col-md-4"><label class="form-label small text-muted mb-1">Quotation template</label>{{ template_form.template }}</div>
+        <div class="col-md-4"><label class="form-label small text-muted mb-1">Customer</label>{{ template_form.customer }}</div>
+        <div class="col-md-2"><label class="form-label small text-muted mb-1">Start date</label>{{ template_form.start_date }}</div>
+        <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">{% icon "sparkles" "me-1" %}Create</button></div>
+      </form>
+    </div></div>
+  </div>
+
+  <div class="status-tabs">
+    <a href="?" class="badge rounded-pill {% if not current_status %}text-bg-primary{% else %}text-bg-light{% endif %}">All</a>
+    {% for code, label, count in status_counts %}
+      <a href="?status={{ code }}" class="badge rounded-pill {% if current_status == code %}text-bg-primary{% else %}text-bg-light{% endif %}">{{ label }} · {{ count }}</a>
+    {% endfor %}
+  </div>
+
+  <div class="card table-card">
+    <div class="card-header">{% include "partials/_filter_form.html" with form=filter_form %}</div>
+    <div class="card-body p-0">
+      {% if subscriptions %}
+        <div class="table-responsive"><table class="table table-hover align-middle">
+          <thead><tr><th>Number</th><th>Customer</th><th>Plan</th><th>Start</th><th>Expiry</th><th>Next invoice</th><th class="text-end">Per period</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for sub in subscriptions %}
+              <tr>
+                <td><a href="{{ sub.get_absolute_url }}" class="row-link">{{ sub.number }}</a></td>
+                <td>{{ sub.customer.name }}</td>
+                <td>{{ sub.plan.name }}</td>
+                <td>{{ sub.start_date|date:"d M Y" }}</td>
+                <td>{{ sub.expiry_date|date:"d M Y"|default:"-" }}</td>
+                <td>{{ sub.next_invoice_date|date:"d M Y"|default:"-" }}</td>
+                <td class="text-end">{{ sub.amount_total|money }}</td>
+                <td>{% status_badge sub.status sub.get_status_display %}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table></div>
+      {% else %}
+        {% url 'subscriptions:subscription_create' as create_url %}
+        {% include "partials/_empty_state.html" with icon="repeat" title="No subscriptions found" text="Create one from scratch or from a quotation template." cta_url=create_url cta_label="New subscription" %}
+      {% endif %}
+    </div>
+  </div>
+  {% include "partials/_pagination.html" %}
+{% endblock %}
