@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}Invoices{% endblock %}
+{% block topbar_title %}Invoices{% endblock %}
+{% block page_title %}Invoices{% endblock %}
+{% block page_subtitle %}Generated from subscriptions. Draft → Confirmed → Paid; overdue ones float to the top of the chase list.{% endblock %}
+{% block page_actions %}
+  {% if summary.drafts %}{% url 'billing:invoice_confirm_drafts' as confirm_url %}{% include "partials/_action_form.html" with url=confirm_url label="Confirm all drafts" css="btn-outline-primary" icon="check" confirm="Confirm every draft invoice?" %}{% endif %}
+  <a href="{% url 'billing:run' %}" class="btn btn-primary btn-sm">{% icon "calendar" "me-1" %}Billing run</a>
+{% endblock %}
+{% block content %}
+  <div class="row g-3 mb-3">
+    <div class="col-sm-4">{% include "partials/_stat_card.html" with label="Draft invoices" value=summary.drafts icon="file-text" tone="secondary" url="?state=draft" %}</div>
+    <div class="col-sm-4">{% with o=summary.outstanding %}{% include "partials/_stat_card.html" with label="Outstanding" value=o.total|subtract:o.paid|money icon="wallet" tone="warning" url="?state=outstanding" %}{% endwith %}</div>
+    <div class="col-sm-4">{% with o=summary.overdue %}{% include "partials/_stat_card.html" with label="Overdue" value=o.total|subtract:o.paid|money hint=o.n|stringformat:"d"|add:" invoice(s)" icon="alert" tone="danger" url="?state=overdue" %}{% endwith %}</div>
+  </div>
+  <div class="card table-card">
+    <div class="card-header">{% include "partials/_filter_form.html" with form=filter_form %}</div>
+    <div class="card-body p-0">
+      {% if invoices %}
+        <div class="table-responsive"><table class="table table-hover align-middle">
+          <thead><tr><th>Number</th><th>Customer</th><th>Subscription</th><th>Date</th><th>Due</th><th class="text-end">Total</th><th class="text-end">Amount due</th><th>State</th></tr></thead>
+          <tbody>
+            {% for invoice in invoices %}
+              <tr>
+                <td><a href="{{ invoice.get_absolute_url }}" class="row-link">{{ invoice.number }}</a></td>
+                <td>{{ invoice.customer_name }}</td>
+                <td>{% if invoice.subscription %}<a href="{{ invoice.subscription.get_absolute_url }}">{{ invoice.subscription.number }}</a>{% else %}-{% endif %}</td>
+                <td>{{ invoice.invoice_date|date:"d M Y" }}</td>
+                <td{% if invoice.is_overdue %} class="text-danger fw-semibold"{% endif %}>{{ invoice.due_date|date:"d M Y" }}</td>
+                <td class="text-end">{{ invoice.amount_total|money }}</td>
+                <td class="text-end">{{ invoice.amount_due|money }}</td>
+                <td>{% status_badge invoice.payment_state %}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table></div>
+      {% else %}
+        {% url 'billing:run' as run_url %}
+        {% include "partials/_empty_state.html" with icon="file-text" title="No invoices found" text="Invoices are created by the billing run from active subscriptions." cta_url=run_url cta_label="Open billing run" %}
+      {% endif %}
+    </div>
+  </div>
+  {% include "partials/_pagination.html" %}
+{% endblock %}
