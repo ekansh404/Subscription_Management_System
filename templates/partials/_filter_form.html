@@ -1,0 +1,14 @@
+{% load core_tags %}
+{# Inline GET filter bar: {% include "partials/_filter_form.html" with form=filter_form %} (selects/dates auto-submit) #}
+<form method="get" class="filter-form row g-2 align-items-end" data-autosubmit>
+  {% for field in form.visible_fields %}
+    <div class="col-6 col-md-3 col-xl-2">
+      <label class="form-label small text-muted mb-1" for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+    </div>
+  {% endfor %}
+  <div class="col-auto d-flex gap-2">
+    <button type="submit" class="btn btn-primary btn-sm">{% icon "filter" "me-1" %}Filter</button>
+    <a href="{{ request.path }}" class="btn btn-light btn-sm">Reset</a>
+  </div>
+</form>

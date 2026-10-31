@@ -1,0 +1,20 @@
+{% load static core_tags %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Print{% endblock %} · {{ app_name }}</title>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body class="print-body">
+  <div class="print-toolbar d-print-none">
+    <a href="{% block back_url %}{% url 'core:home' %}{% endblock %}" class="btn btn-light btn-sm">{% icon "arrow-left" "me-1" %}Back</a>
+    <button type="button" class="btn btn-primary btn-sm" data-print>{% icon "printer" "me-1" %}Print / Save as PDF</button>
+  </div>
+  <div class="print-page">
+    {% block content %}{% endblock %}
+  </div>
+  <script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}Not found{% endblock %}
+{% block page_header %}{% endblock %}
+{% block content %}
+  <div class="empty-state">
+    <div class="empty-state-icon">{% icon "search" %}</div>
+    <h1 class="h4">Page not found</h1>
+    <p class="text-muted">The page you are looking for doesn't exist or was moved.</p>
+    <a href="{% url 'core:home' %}" class="btn btn-primary btn-sm">Go home</a>
+  </div>
+{% endblock %}

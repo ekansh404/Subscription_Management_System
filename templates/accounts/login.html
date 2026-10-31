@@ -1,0 +1,18 @@
+{% extends "base_auth.html" %}
+{% load core_tags %}
+{% block title %}Sign in{% endblock %}
+{% block heading %}Welcome back{% endblock %}
+{% block lead %}Sign in to manage subscriptions and billing.{% endblock %}
+
+{% block content %}
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% include "partials/_form_fields.html" with form=form %}
+    <input type="hidden" name="next" value="{{ next }}">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <a href="{% url 'accounts:password_reset' %}" class="small">Forgot your password?</a>
+    </div>
+    <button type="submit" class="btn btn-primary w-100">{% icon "log-in" "me-1" %}Sign in</button>
+  </form>
+  <p class="text-center text-muted small mt-4 mb-0">New customer? <a href="{% url 'accounts:signup' %}">Create an account</a></p>
+{% endblock %}

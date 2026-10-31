@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}My profile{% endblock %}
+{% block topbar_title %}My account{% endblock %}
+{% block page_title %}My profile{% endblock %}
+{% block page_subtitle %}Signed in as {{ user.email }} · {{ user.get_role_display }}{% endblock %}
+{% block page_actions %}
+  <a href="{% url 'accounts:password_change' %}" class="btn btn-light btn-sm">{% icon "key" "me-1" %}Change password</a>
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-lg-6 col-xl-5">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Personal details</span></div>
+        <div class="card-body">
+          <form method="post" novalidate>
+            {% csrf_token %}
+            {% include "partials/_form_fields.html" with form=form %}
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" value="{{ user.email }}" disabled>
+              <div class="form-text">Your email is your sign-in name and can't be changed here.</div>
+            </div>
+            <button type="submit" class="btn btn-primary">{% icon "check" "me-1" %}Save changes</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

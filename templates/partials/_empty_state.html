@@ -1,0 +1,8 @@
+{% load core_tags %}
+{# {% include "partials/_empty_state.html" with icon="users" title="No customers yet" text="..." cta_url=url cta_label="Add customer" %} #}
+<div class="empty-state">
+  <div class="empty-state-icon">{% icon icon|default:"inbox" %}</div>
+  <h3 class="h5 mb-1">{{ title|default:"Nothing here yet" }}</h3>
+  {% if text %}<p class="text-muted mb-3">{{ text }}</p>{% endif %}
+  {% if cta_url %}<a href="{{ cta_url }}" class="btn btn-primary btn-sm">{% icon "plus" "me-1" %}{{ cta_label|default:"Create" }}</a>{% endif %}
+</div>

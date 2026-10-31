@@ -1,0 +1,104 @@
+# Brightloop · Subscription Management System
+
+One place to run plans, subscriptions and recurring billing: products with variants, plans,
+quotations, subscriptions with a real lifecycle, automatic invoicing with taxes and discounts,
+payments, a customer portal and a finance dashboard.
+
+Built for the **Odoo x FLUX Lucknow Hackathon '26** (problem statement: *Subscription Management System*).
+
+## Stack
+
+| Layer | Choice | Why |
+| --- | --- | --- |
+| Backend | Python 3.12+ · Django 6 | Batteries included: ORM + migrations, auth, forms with validation, admin, tests. Odoo-friendly Python. |
+| Database | SQLite (default) · PostgreSQL via `DATABASE_URL` | Zero-setup local database; swap to Postgres with one env var. |
+| Frontend | Django templates · Bootstrap 5 (vendored) · vanilla JS | Responsive, consistent UI with no build step and no CDN dependency (works offline). |
+| API | Django REST Framework (read-only JSON API) | Lets other tools read subscriptions, invoices and KPIs. |
+| Charts | Chart.js (vendored) | Dashboard revenue and status charts. |
+
+No static JSON: every screen reads and writes the database.
+
+## Quick start (Windows / macOS / Linux)
+
+```bash
+git clone https://github.com/ekansh404/Subscription_Management_System.git
+cd Subscription_Management_System
+
+# 1. virtual environment
+python -m venv .venv
+.venv\Scripts\activate          # Windows (PowerShell / cmd)
+# source .venv/bin/activate     # macOS / Linux
+
+# 2. dependencies
+pip install -r requirements.txt
+
+# 3. database + first administrator
+python manage.py migrate
+python manage.py createsuperuser   # creates an Administrator (role=admin)
+
+# 4. run
+python manage.py runserver
+```
+
+Open http://127.0.0.1:8000 and sign in. Customers create their own account at `/accounts/signup/`.
+
+> On Windows, if `python` is not found, use `py -3 -m venv .venv` and `py manage.py ...`.
+
+Optional: copy `.env.example` to `.env` to change the secret key, database, email backend or branding.
+Password-reset emails are printed to the terminal in development (console email backend).
+
+## Roles
+
+| Role | Who | Can |
+| --- | --- | --- |
+| Administrator | Brightloop owner | Everything, plus: add staff, manage products/plans/taxes/discounts |
+| Staff | Internal team | Customers, quotations, subscriptions, invoices, payments, reports |
+| Customer | Self sign-up | Portal: only their own subscriptions and invoices |
+
+Only an administrator can add staff (`Staff` in the sidebar). Customers sign up with an email
+(unique) and a password of more than 8 characters containing an uppercase letter, a lowercase
+letter and a special character. Forgotten passwords are reset through an emailed link.
+
+## Project layout
+
+```
+config/          settings, root URL loop (every app in PROJECT_APPS is mounted at /<app>/)
+core/            base layout, theme, navigation registry, role mixins, numbering, date math
+accounts/        email-login user model, roles, signup/login/reset, staff management
+customers/       customer records (linked to portal accounts)
+catalog/         taxes, products + variants (attribute price extras), plans (billing periods)
+subscriptions/   quotation templates, subscriptions with lines and lifecycle
+billing/         discounts, invoices (auto-generated from subscriptions), billing run
+payments/        payment recording, outstanding / overdue tracking
+portal/          customer self-service
+reports/         finance dashboard with filters and charts
+api/             read-only REST API
+templates/       one folder per app, shared partials in templates/partials/
+static/          app.css (theme), app.js (behaviours), vendored Bootstrap + Chart.js
+```
+
+## Development
+
+```bash
+python manage.py test              # run the test suite
+python manage.py check             # Django system checks
+python manage.py makemigrations    # after changing models
+```
+
+Continuous integration (GitHub Actions) runs checks, verifies migrations are committed and runs
+the tests on every push.
+
+## Roadmap (hackathon build log)
+
+- [x] Stage 1 · Project scaffold, theme, email login, roles, password policy & reset, staff management
+- [ ] Stage 2 · Customers
+- [ ] Stage 3 · Catalog: taxes, products with variants, plans
+- [ ] Stage 4 · Quotation templates & subscriptions with lifecycle
+- [ ] Stage 5 · Discounts & invoices, billing run
+- [ ] Stage 6 · Payments, outstanding/overdue tracking, customer portal
+- [ ] Stage 7 · Finance dashboard, REST API, demo data
+- [ ] Stage 8 · Polish, documentation, final tests
+
+## License
+
+MIT

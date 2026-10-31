@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{% if object %}Edit {{ object.display_name }}{% else %}Add staff member{% endif %}{% endblock %}
+{% block topbar_title %}Staff{% endblock %}
+{% block page_title %}{% if object %}Edit team member{% else %}Add staff member{% endif %}{% endblock %}
+{% block page_subtitle %}{% if object %}{{ object.email }}{% else %}The new member signs in with the email and password you set here.{% endif %}{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-lg-7 col-xl-5">
+      <div class="card">
+        <div class="card-body">
+          <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+            <div class="row">
+              <div class="col-sm-6">{% include "partials/_field.html" with field=form.first_name %}</div>
+              <div class="col-sm-6">{% include "partials/_field.html" with field=form.last_name %}</div>
+            </div>
+            {% include "partials/_field.html" with field=form.email %}
+            {% include "partials/_field.html" with field=form.role %}
+            {% if form.password1 %}
+              {% include "partials/_field.html" with field=form.password1 %}
+              {% include "partials/_field.html" with field=form.password2 %}
+            {% endif %}
+            {% if form.is_active %}{% include "partials/_field.html" with field=form.is_active %}{% endif %}
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary">{% icon "check" "me-1" %}{% if object %}Save changes{% else %}Add member{% endif %}</button>
+              <a href="{% url 'accounts:staff_list' %}" class="btn btn-light">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

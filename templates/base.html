@@ -1,0 +1,94 @@
+{% load static core_tags %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ app_name }}{% endblock %} · {{ app_name }}</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f46e5'/%3E%3Cpath d='M18 5 8 18h7l-1 9 10-13h-7z' fill='white'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body data-currency="{{ currency_symbol }}">
+<div class="app-shell">
+
+  <aside class="sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="sidebar" aria-label="Main navigation">
+    <div class="sidebar-inner">
+      <div class="sidebar-brand">
+        <a href="{% url 'core:home' %}" class="brand">
+          <span class="brand-mark">{% icon "zap" %}</span>
+          <span class="brand-name">{{ app_name }}</span>
+        </a>
+        <button type="button" class="btn-close btn-close-white d-lg-none" data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="Close"></button>
+      </div>
+
+      <nav class="sidebar-nav">
+        {% for item in menu_items %}
+          <a class="sidebar-link{% if item.namespace == current_namespace %} active{% endif %}" href="{% url item.url_name %}">
+            {% icon item.icon %}<span>{{ item.label }}</span>
+          </a>
+        {% endfor %}
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="avatar">{{ user.display_name|initials }}</div>
+        <div class="min-w-0">
+          <div class="text-truncate fw-semibold">{{ user.display_name }}</div>
+          <div class="small text-truncate opacity-75">{{ user.get_role_display }}</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="app-main">
+    <header class="topbar">
+      <button class="btn btn-icon d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar" aria-label="Open navigation">
+        {% icon "menu" %}
+      </button>
+      <div class="topbar-title d-none d-sm-block">{% block topbar_title %}{% endblock %}</div>
+      <div class="ms-auto d-flex align-items-center gap-2">
+        {% block topbar_actions %}{% endblock %}
+        <div class="dropdown">
+          <button class="btn btn-light btn-sm d-flex align-items-center gap-2 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="avatar avatar-sm">{{ user.display_name|initials }}</span>
+            <span class="d-none d-md-inline">{{ user.display_name }}</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+            <li><h6 class="dropdown-header">{{ user.email }}</h6></li>
+            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">{% icon "user" "me-2" %}My profile</a></li>
+            <li><a class="dropdown-item" href="{% url 'accounts:password_change' %}">{% icon "key" "me-2" %}Change password</a></li>
+            {% if user.is_superuser %}<li><a class="dropdown-item" href="{% url 'admin:index' %}">{% icon "settings" "me-2" %}Django admin</a></li>{% endif %}
+            <li><hr class="dropdown-divider"></li>
+            <li><button class="dropdown-item" type="submit" form="logout-form">{% icon "log-out" "me-2" %}Sign out</button></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      {% include "partials/_messages.html" %}
+      {% block page_header %}
+        <div class="page-header">
+          <div class="page-heading">
+            <h1 class="page-title">{% block page_title %}{% endblock %}</h1>
+            <p class="page-subtitle">{% block page_subtitle %}{% endblock %}</p>
+          </div>
+          <div class="page-actions">{% block page_actions %}{% endblock %}</div>
+        </div>
+      {% endblock %}
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="app-footer">
+      {{ app_name }} Subscription Management · built for the Odoo x FLUX Lucknow Hackathon '26
+    </footer>
+  </div>
+</div>
+
+<form id="logout-form" method="post" action="{% url 'accounts:logout' %}" class="d-none">{% csrf_token %}</form>
+
+<script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/app.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

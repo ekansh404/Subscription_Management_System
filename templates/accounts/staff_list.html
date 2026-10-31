@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}Staff{% endblock %}
+{% block topbar_title %}Staff{% endblock %}
+{% block page_title %}Team members{% endblock %}
+{% block page_subtitle %}Internal staff and administrators. Only administrators can add members.{% endblock %}
+{% block page_actions %}
+  <a href="{% url 'accounts:staff_create' %}" class="btn btn-primary btn-sm">{% icon "user-plus" "me-1" %}Add staff member</a>
+{% endblock %}
+
+{% block content %}
+  <div class="card table-card">
+    <div class="card-header">
+      <form method="get" class="d-flex gap-2 w-100" role="search">
+        <input type="search" name="q" value="{{ query }}" class="form-control form-control-sm" placeholder="Search by name or email" aria-label="Search staff">
+        <button class="btn btn-light btn-sm" type="submit">{% icon "search" %}</button>
+      </form>
+    </div>
+    <div class="card-body p-0">
+      {% if members %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Joined</th>
+                <th class="actions-cell"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for member in members %}
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="avatar avatar-sm">{{ member.display_name|initials }}</span>
+                      <a href="{% url 'accounts:staff_update' member.pk %}" class="row-link">{{ member.display_name }}</a>
+                    </div>
+                  </td>
+                  <td>{{ member.email }}</td>
+                  <td>{% if member.is_admin %}{% status_badge "confirmed" "Administrator" %}{% else %}{% status_badge "active" "Staff" %}{% endif %}</td>
+                  <td>{% if member.is_active %}<span class="text-success">Active</span>{% else %}<span class="text-muted">Deactivated</span>{% endif %}</td>
+                  <td>{{ member.date_joined|date:"d M Y" }}</td>
+                  <td class="actions-cell">
+                    <a href="{% url 'accounts:staff_update' member.pk %}" class="btn btn-light btn-sm" title="Edit">{% icon "pencil" %}</a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        {% include "partials/_empty_state.html" with icon="users" title="No team members found" text="Try a different search or add a new staff member." cta_url=request.path|add:"new/" cta_label="Add staff member" %}
+      {% endif %}
+    </div>
+  </div>
+  {% include "partials/_pagination.html" %}
+{% endblock %}

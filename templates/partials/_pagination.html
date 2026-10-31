@@ -1,0 +1,30 @@
+{% load core_tags %}
+{% if page_obj and page_obj.paginator.num_pages > 1 %}
+  <nav class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3" aria-label="Pagination">
+    <span class="text-muted small">Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }}</span>
+    <ul class="pagination pagination-sm mb-0">
+      {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="{% querystring page=page_obj.previous_page_number %}" aria-label="Previous">&laquo;</a></li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+      {% endif %}
+      {% elided_pages page_obj as pages %}
+      {% for number in pages %}
+        {% if number == page_obj.paginator.ELLIPSIS %}
+          <li class="page-item disabled"><span class="page-link">{{ number }}</span></li>
+        {% elif number == page_obj.number %}
+          <li class="page-item active" aria-current="page"><span class="page-link">{{ number }}</span></li>
+        {% else %}
+          <li class="page-item"><a class="page-link" href="{% querystring page=number %}">{{ number }}</a></li>
+        {% endif %}
+      {% endfor %}
+      {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="{% querystring page=page_obj.next_page_number %}" aria-label="Next">&raquo;</a></li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+      {% endif %}
+    </ul>
+  </nav>
+{% elif page_obj %}
+  <div class="text-muted small mt-3">{{ page_obj.paginator.count }} result{{ page_obj.paginator.count|pluralize }}</div>
+{% endif %}

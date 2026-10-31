@@ -1,0 +1,21 @@
+{% extends "base_auth.html" %}
+{% load core_tags %}
+{% block title %}Create account{% endblock %}
+{% block heading %}Create your account{% endblock %}
+{% block lead %}See and manage your subscriptions and invoices online.{% endblock %}
+
+{% block content %}
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+    <div class="row">
+      <div class="col-6">{% include "partials/_field.html" with field=form.first_name %}</div>
+      <div class="col-6">{% include "partials/_field.html" with field=form.last_name %}</div>
+    </div>
+    {% include "partials/_field.html" with field=form.email %}
+    {% include "partials/_field.html" with field=form.password1 %}
+    {% include "partials/_field.html" with field=form.password2 %}
+    <button type="submit" class="btn btn-primary w-100">{% icon "user-plus" "me-1" %}Create account</button>
+  </form>
+  <p class="text-center text-muted small mt-4 mb-0">Already have an account? <a href="{% url 'accounts:login' %}">Sign in</a></p>
+{% endblock %}

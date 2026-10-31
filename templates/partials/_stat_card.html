@@ -1,0 +1,13 @@
+{% load core_tags %}
+{# {% include "partials/_stat_card.html" with label="Active subscriptions" value=stats.active icon="repeat" tone="primary" hint="+4 this month" url=... %} #}
+<div class="card stat-card h-100">
+  <div class="card-body d-flex align-items-center gap-3">
+    <div class="stat-icon tone-{{ tone|default:'primary' }}">{% icon icon|default:"activity" %}</div>
+    <div class="min-w-0 flex-grow-1">
+      <div class="stat-label">{{ label }}</div>
+      <div class="stat-value text-truncate">{{ value }}</div>
+      {% if hint %}<div class="stat-hint">{{ hint }}</div>{% endif %}
+    </div>
+    {% if url %}<a href="{{ url }}" class="stretched-link" aria-label="{{ label }}"></a>{% endif %}
+  </div>
+</div>
