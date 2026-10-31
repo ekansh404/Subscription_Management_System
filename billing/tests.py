@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from django.core import mail
 from django.db import IntegrityError
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from accounts.models import Role
@@ -223,3 +223,47 @@ class SafeRedirectTests(BillingFixtures, TestCase):
         self.assertRedirects(response, invoice.get_absolute_url(), fetch_redirect_response=False)
         response = self.client.post(reverse("billing:invoice_action", args=[invoice.pk, "send"]), {"next": "/billing/invoices/"})
         self.assertRedirects(response, "/billing/invoices/", fetch_redirect_response=False)
+
+
+class FailingEmailBackend:
+    """Email backend that behaves like an unreachable SMTP server."""
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def send_messages(self, messages):
+        raise ConnectionRefusedError("SMTP server unreachable")
+
+
+@override_settings(EMAIL_BACKEND="billing.tests.FailingEmailBackend")
+class EmailFailureTests(BillingFixtures, TestCase):
+    """A broken mail server shows a message; it never crashes a page."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.make_catalog()
+        cls.staff = make_user("staff@example.com", role=Role.STAFF)
+
+    def setUp(self):
+        self.client.force_login(self.staff)
+        self.invoice = services.create_invoice(self.make_active())
+        services.confirm_invoice(self.invoice)
+
+    def test_send_invoice_reports_error(self):
+        with self.assertLogs("billing.services", "ERROR"):
+            response = self.client.post(reverse("billing:invoice_action", args=[self.invoice.pk, "send"]), follow=True)
+        self.assertContains(response, "could not be sent")
+        self.invoice.refresh_from_db()
+        self.assertIsNone(self.invoice.sent_at)
+
+    def test_overdue_reminder_reports_error(self):
+        with self.assertLogs("payments.views", "ERROR"):
+            response = self.client.post(reverse("payments:payment_remind", args=[self.invoice.pk]), follow=True)
+        self.assertContains(response, "could not be sent")
+
+    def test_password_reset_still_shows_done_page(self):
+        self.client.logout()
+        make_user("someone@example.com")
+        with self.assertLogs("django.contrib.auth", "ERROR"):  # Django logs and swallows mail errors here
+            response = self.client.post(reverse("accounts:password_reset"), {"email": "someone@example.com"})
+        self.assertRedirects(response, reverse("accounts:password_reset_done"))

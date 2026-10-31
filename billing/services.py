@@ -11,6 +11,8 @@ Billing rules: invoice generation, discounts and the billing run.
   unique index forbids a second live invoice for the same period.
 """
 
+import logging
+import smtplib
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 from decimal import Decimal
@@ -30,6 +32,8 @@ from subscriptions.models import Status as SubscriptionStatus
 from subscriptions.models import Subscription
 
 from .models import Discount, DiscountScope, DiscountType, Invoice, InvoiceDiscount, InvoiceLine, InvoiceStatus
+
+logger = logging.getLogger(__name__)
 
 
 class BillingError(Exception):
@@ -299,12 +303,16 @@ def send_invoice(invoice: Invoice, request=None) -> Invoice:
         confirm_invoice(invoice)
     link = request.build_absolute_uri(invoice.get_absolute_url()) if request else ""
     body = render_to_string("billing/invoice_email.txt", {"invoice": invoice, "link": link, "app_name": settings.APP_NAME})
-    send_mail(
-        f"{settings.APP_NAME} invoice {invoice.number}",
-        body,
-        settings.DEFAULT_FROM_EMAIL,
-        [invoice.customer_email],
-    )
+    try:
+        send_mail(
+            f"{settings.APP_NAME} invoice {invoice.number}",
+            body,
+            settings.DEFAULT_FROM_EMAIL,
+            [invoice.customer_email],
+        )
+    except (OSError, smtplib.SMTPException) as error:  # mail server down, wrong key, no network...
+        logger.exception("Could not email invoice %s", invoice.number)
+        raise BillingError(f"The email could not be sent ({error.__class__.__name__}). Check the email settings and try again.") from error
     invoice.sent_at = timezone.now()
     invoice.save(update_fields=["sent_at", "updated_at"])
     return invoice

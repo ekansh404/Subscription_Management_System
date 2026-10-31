@@ -1,3 +1,5 @@
+import logging
+import smtplib
 from collections import OrderedDict
 from decimal import Decimal
 
@@ -17,6 +19,8 @@ from core.utils.urls import redirect_next
 from .forms import PaymentFilterForm, PaymentForm
 from .models import Payment, PaymentMethod
 from .services import PaymentError, record_payment
+
+logger = logging.getLogger(__name__)
 
 
 class PaymentListView(StaffRequiredMixin, ListView):
@@ -144,13 +148,18 @@ class ReceivablesView(StaffRequiredMixin, TemplateView):
 class SendReminderView(StaffRequiredMixin, View):
     def post(self, request, invoice_pk):
         invoice = get_object_or_404(Invoice, pk=invoice_pk, status=InvoiceStatus.CONFIRMED)
-        send_mail(
-            f"Reminder: invoice {invoice.number} is overdue",
-            f"Hello {invoice.customer_name},\n\nOur records show {invoice.amount_due:,.2f} {settings.CURRENCY_CODE} is still due on "
-            f"invoice {invoice.number} (due {invoice.due_date:%d %b %Y}). Please arrange payment at your earliest convenience.\n\n"
-            f"Thank you,\n{settings.APP_NAME} Billing",
-            settings.DEFAULT_FROM_EMAIL,
-            [invoice.customer_email],
-        )
-        messages.success(request, f"Reminder emailed to {invoice.customer_email}.")
+        try:
+            send_mail(
+                f"Reminder: invoice {invoice.number} is overdue",
+                f"Hello {invoice.customer_name},\n\nOur records show {invoice.amount_due:,.2f} {settings.CURRENCY_CODE} is still due on "
+                f"invoice {invoice.number} (due {invoice.due_date:%d %b %Y}). Please arrange payment at your earliest convenience.\n\n"
+                f"Thank you,\n{settings.APP_NAME} Billing",
+                settings.DEFAULT_FROM_EMAIL,
+                [invoice.customer_email],
+            )
+        except (OSError, smtplib.SMTPException):
+            logger.exception("Could not email a reminder for %s", invoice.number)
+            messages.error(request, "The reminder could not be sent. Check the email settings and try again.")
+        else:
+            messages.success(request, f"Reminder emailed to {invoice.customer_email}.")
         return redirect_next(request, "payments:receivables")

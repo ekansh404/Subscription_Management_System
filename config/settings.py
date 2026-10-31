@@ -156,6 +156,7 @@ if env("EMAIL_BACKEND", "console") == "smtp":
     EMAIL_HOST_USER = env("EMAIL_HOST_USER")
     EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
     EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
+    EMAIL_TIMEOUT = int(env("EMAIL_TIMEOUT", "10"))  # seconds; a slow mail server must not hang a page
 else:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", "billing@brightloop.local")
