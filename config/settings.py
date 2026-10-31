@@ -34,6 +34,9 @@ def env_bool(key: str, default: bool = False) -> bool:
 SECRET_KEY = env("DJANGO_SECRET_KEY", "django-insecure-local-dev-key-change-me")
 DEBUG = env_bool("DJANGO_DEBUG", True)
 ALLOWED_HOSTS = [h.strip() for h in env("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()]
+# Full origins (scheme + host) allowed to submit forms when hosted behind HTTPS,
+# e.g. "https://ekansh.pythonanywhere.com". Without it, sign-in fails with "CSRF verification failed".
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in env("DJANGO_CSRF_TRUSTED_ORIGINS").split(",") if o.strip()]
 
 # Apps that make up this product, in dependency order. Each app exposes
 # `<app>/urls.py` (mounted at `/<app>/`, except `core` at `/`) and may declare
