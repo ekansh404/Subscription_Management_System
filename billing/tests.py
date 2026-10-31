@@ -185,6 +185,8 @@ class BillingViewTests(BillingFixtures, TestCase):
         invoice = Invoice.objects.get()
         self.assertEqual(invoice.status, InvoiceStatus.CONFIRMED)
         self.assertContains(self.client.get(invoice.get_absolute_url()), invoice.number)
+        self.client.post(reverse("billing:invoice_action", args=[invoice.pk, "send"]))
+        self.assertIn(reverse("portal:invoice_detail", args=[invoice.pk]), mail.outbox[-1].body)  # customer-facing link
         self.assertContains(self.client.get(reverse("billing:invoice_print", args=[invoice.pk])), "Amount due")
         self.assertContains(self.client.get(reverse("billing:invoice_list"), {"state": "due"}), invoice.number)
         response = self.client.post(reverse("billing:run"), {"run_date": date.today().isoformat()})
