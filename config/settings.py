@@ -42,6 +42,7 @@ PROJECT_APPS = [
     "core",
     "accounts",
     "customers",
+    "catalog",
 ]
 
 INSTALLED_APPS = [

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}Plans{% endblock %}
+{% block topbar_title %}Plans{% endblock %}
+{% block page_title %}Recurring plans{% endblock %}
+{% block page_subtitle %}What a subscription costs, how often it bills, and what customers may do with it.{% endblock %}
+{% block page_actions %}{% if user.is_admin %}<a href="{% url 'catalog:plan_create' %}" class="btn btn-primary btn-sm">{% icon "plus" "me-1" %}New plan</a>{% endif %}{% endblock %}
+{% block content %}
+  <div class="card table-card">
+    <div class="card-header">{% include "partials/_filter_form.html" with form=filter_form %}</div>
+    <div class="card-body p-0">
+      {% if plans %}
+        <div class="table-responsive"><table class="table table-hover align-middle">
+          <thead><tr><th>Plan</th><th class="text-end">Price</th><th>Billing</th><th class="text-end">Min qty</th><th>Available</th><th>Options</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for plan in plans %}
+              <tr>
+                <td><a href="{{ plan.get_absolute_url }}" class="row-link">{{ plan.name }}</a>{% if plan.product %}<div class="small text-muted">{{ plan.product }}</div>{% endif %}</td>
+                <td class="text-end">{{ plan.price|money }}</td>
+                <td>{{ plan.get_billing_period_display }}</td>
+                <td class="text-end">{{ plan.min_quantity }}</td>
+                <td class="small">{{ plan.start_date|date:"d M Y"|default:"Any time" }} → {{ plan.end_date|date:"d M Y"|default:"open" }}</td>
+                <td>{% for option in plan.lifecycle_options %}<span class="badge text-bg-light">{{ option }}</span> {% endfor %}</td>
+                <td>{% if plan.is_available %}{% status_badge "available" "Available" %}{% elif plan.is_active %}{% status_badge "expired" "Out of window" %}{% else %}{% status_badge "inactive" "Inactive" %}{% endif %}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table></div>
+      {% else %}
+        {% include "partials/_empty_state.html" with icon="layers" title="No plans found" text="Administrators create plans with a price, billing period and lifecycle rules." %}
+      {% endif %}
+    </div>
+  </div>
+  {% include "partials/_pagination.html" %}
+{% endblock %}

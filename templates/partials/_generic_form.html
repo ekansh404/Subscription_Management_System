@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{# Generic create/edit page. Context: form, object (optional), cancel_url, section, singular #}
+{% block title %}{% if object %}Edit {{ object }}{% else %}New {{ singular }}{% endif %}{% endblock %}
+{% block topbar_title %}{{ section }}{% endblock %}
+{% block page_title %}{% if object %}Edit {{ singular }}{% else %}New {{ singular }}{% endif %}{% endblock %}
+{% block page_subtitle %}{% if object %}{{ object }}{% else %}{{ form_hint }}{% endif %}{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="{{ form_width|default:'col-lg-8 col-xl-6' }}">
+      <div class="card">
+        <div class="card-body">
+          <form method="post" novalidate>
+            {% csrf_token %}
+            {% include "partials/_form_fields.html" with form=form %}
+            {% block extra_form %}{% endblock %}
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary">{% icon "check" "me-1" %}{% if object %}Save changes{% else %}Create {{ singular }}{% endif %}</button>
+              <a href="{{ cancel_url }}" class="btn btn-light">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

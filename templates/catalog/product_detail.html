@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ product.name }}{% endblock %}
+{% block topbar_title %}Products{% endblock %}
+{% block page_title %}{{ product.name }}{% endblock %}
+{% block page_subtitle %}{{ product.get_product_type_display }}{% if not product.is_active %} · archived{% endif %}{% endblock %}
+{% block page_actions %}{% if user.is_admin %}<a href="{% url 'catalog:product_update' product.pk %}" class="btn btn-light btn-sm">{% icon "pencil" "me-1" %}Edit</a>{% endif %}{% endblock %}
+{% block content %}
+  <div class="row g-3">
+    <div class="col-lg-4">
+      <div class="card mb-3"><div class="card-body">
+        <dl class="detail-list">
+          <dt>Sales price</dt><dd>{{ product.sales_price|money }}</dd>
+          <dt>Cost price</dt><dd>{{ product.cost_price|money }}</dd>
+          <dt>Margin</dt><dd>{{ product.margin|money }}</dd>
+          <dt>Taxes</dt><dd>{% for tax in product.taxes.all %}{{ tax }}{% if not forloop.last %}, {% endif %}{% empty %}None{% endfor %}</dd>
+          <dt>Options</dt><dd>{% for value in product.attribute_values.all %}<span class="badge text-bg-light">{{ value }}</span> {% empty %}None{% endfor %}</dd>
+        </dl>
+      </div></div>
+      {% if product.notes %}<div class="card"><div class="card-header fw-semibold">Notes</div><div class="card-body">{{ product.notes|linebreaksbr }}</div></div>{% endif %}
+    </div>
+    <div class="col-lg-8">
+      <div class="card table-card">
+        <div class="card-header fw-semibold">Variants</div>
+        <div class="card-body p-0"><div class="table-responsive"><table class="table align-middle mb-0">
+          <thead><tr><th>Variant</th><th class="text-end">Base</th><th class="text-end">Extra</th><th class="text-end">Price</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for variant in product.variants.all %}
+              <tr{% if not variant.is_active %} class="text-muted"{% endif %}>
+                <td>{{ variant.name }}</td>
+                <td class="text-end">{{ product.sales_price|money }}</td>
+                <td class="text-end">{% if variant.price_extra %}+{{ variant.price_extra|money }}{% else %}-{% endif %}</td>
+                <td class="text-end fw-semibold">{{ variant.price|money }}</td>
+                <td>{% if variant.is_active %}{% status_badge "available" "Available" %}{% else %}{% status_badge "inactive" "Archived" %}{% endif %}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table></div></div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}Taxes{% endblock %}
+{% block topbar_title %}Taxes{% endblock %}
+{% block page_title %}Taxes{% endblock %}
+{% block page_subtitle %}Rules applied automatically to every invoice line of the products that use them.{% endblock %}
+{% block page_actions %}<a href="{% url 'catalog:tax_create' %}" class="btn btn-primary btn-sm">{% icon "plus" "me-1" %}New tax</a>{% endblock %}
+{% block content %}
+  <div class="card table-card"><div class="card-body p-0">
+    {% if taxes %}
+      <div class="table-responsive"><table class="table table-hover align-middle">
+        <thead><tr><th>Name</th><th class="text-end">Rate</th><th>Description</th><th class="text-end">Products</th><th>Status</th><th class="actions-cell"></th></tr></thead>
+        <tbody>
+          {% for tax in taxes %}
+            <tr>
+              <td><a href="{% url 'catalog:tax_update' tax.pk %}" class="row-link">{{ tax.name }}</a></td>
+              <td class="text-end">{{ tax.rate|percent }}</td>
+              <td>{{ tax.description|default:"-" }}</td>
+              <td class="text-end">{{ tax.product_count }}</td>
+              <td>{% if tax.is_active %}{% status_badge "active" "Active" %}{% else %}{% status_badge "inactive" "Inactive" %}{% endif %}</td>
+              <td class="actions-cell"><a href="{% url 'catalog:tax_update' tax.pk %}" class="btn btn-light btn-sm">{% icon "pencil" %}</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table></div>
+    {% else %}
+      {% url 'catalog:tax_create' as create_url %}
+      {% include "partials/_empty_state.html" with icon="percent" title="No taxes yet" text="Create GST 18% (or your local rule) to have it applied on invoices." cta_url=create_url cta_label="New tax" %}
+    {% endif %}
+  </div></div>
+{% endblock %}

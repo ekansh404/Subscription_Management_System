@@ -34,3 +34,33 @@ class HomeView(LoginRequiredMixin, TemplateView):
 def healthcheck(request):
     """Lightweight liveness endpoint for uptime monitors and deployment checks."""
     return JsonResponse({"status": "ok"})
+
+
+class FormPageMixin:
+    """
+    Context for ``partials/_generic_form.html``: set ``section`` (sidebar
+    title), ``singular`` (noun used in headings) and ``cancel_url``.
+    """
+
+    template_name = "partials/_generic_form.html"
+    section = ""
+    singular = ""
+    form_hint = ""
+    form_width = ""
+    cancel_url = None
+
+    def get_cancel_url(self):
+        if getattr(self, "object", None) is not None and hasattr(self.object, "get_absolute_url"):
+            return self.object.get_absolute_url()
+        return self.cancel_url
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(
+            section=self.section,
+            singular=self.singular,
+            form_hint=self.form_hint,
+            form_width=self.form_width,
+            cancel_url=self.get_cancel_url(),
+        )
+        return context

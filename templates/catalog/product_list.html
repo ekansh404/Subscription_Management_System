@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}Products{% endblock %}
+{% block topbar_title %}Products{% endblock %}
+{% block page_title %}Products{% endblock %}
+{% block page_subtitle %}Everything Brightloop sells, with prices, taxes and variants.{% endblock %}
+{% block page_actions %}{% if user.is_admin %}<a href="{% url 'catalog:product_create' %}" class="btn btn-primary btn-sm">{% icon "plus" "me-1" %}New product</a>{% endif %}{% endblock %}
+{% block content %}
+  <div class="card table-card">
+    <div class="card-header">{% include "partials/_filter_form.html" with form=filter_form %}</div>
+    <div class="card-body p-0">
+      {% if products %}
+        <div class="table-responsive"><table class="table table-hover align-middle">
+          <thead><tr><th>Product</th><th>Type</th><th class="text-end">Sales price</th><th class="text-end">Cost</th><th>Taxes</th><th class="text-end">Variants</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for product in products %}
+              <tr>
+                <td><a href="{{ product.get_absolute_url }}" class="row-link">{{ product.name }}</a></td>
+                <td>{{ product.get_product_type_display }}</td>
+                <td class="text-end">{{ product.sales_price|money }}</td>
+                <td class="text-end text-muted">{{ product.cost_price|money }}</td>
+                <td>{% for tax in product.taxes.all %}<span class="badge text-bg-light">{{ tax.name }}</span> {% empty %}-{% endfor %}</td>
+                <td class="text-end">{{ product.variant_count }}</td>
+                <td>{% if product.is_active %}{% status_badge "active" "Active" %}{% else %}{% status_badge "inactive" "Archived" %}{% endif %}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table></div>
+      {% else %}
+        {% include "partials/_empty_state.html" with icon="package" title="No products found" text="Administrators add products with prices, taxes and variants." %}
+      {% endif %}
+    </div>
+  </div>
+  {% include "partials/_pagination.html" %}
+{% endblock %}
