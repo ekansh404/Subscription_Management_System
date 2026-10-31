@@ -12,6 +12,7 @@ from django.views.generic import DetailView, FormView, ListView, TemplateView
 
 from billing.models import Invoice, InvoiceStatus
 from core.mixins import StaffRequiredMixin
+from core.utils.urls import redirect_next
 
 from .forms import PaymentFilterForm, PaymentForm
 from .models import Payment, PaymentMethod
@@ -152,4 +153,4 @@ class SendReminderView(StaffRequiredMixin, View):
             [invoice.customer_email],
         )
         messages.success(request, f"Reminder emailed to {invoice.customer_email}.")
-        return redirect(request.POST.get("next") or "payments:receivables")
+        return redirect_next(request, "payments:receivables")

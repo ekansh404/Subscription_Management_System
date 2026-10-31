@@ -18,6 +18,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
 
 from core.models import TimeStampedModel
 from core.utils import dates
@@ -184,7 +185,7 @@ class Plan(TimeStampedModel):
 
     def is_available(self, on: date | None = None) -> bool:
         """Can a new subscription start on this plan on ``on`` (default today)?"""
-        on = on or date.today()
+        on = on or timezone.localdate()
         if not self.is_active:
             return False
         if self.start_date and on < self.start_date:

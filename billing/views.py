@@ -10,6 +10,7 @@ from django.views import View
 from django.views.generic import CreateView, DetailView, FormView, ListView, UpdateView
 
 from core.mixins import AdminRequiredMixin, StaffRequiredMixin
+from core.utils.urls import redirect_next
 from core.views import FormPageMixin
 from subscriptions.models import Subscription
 
@@ -82,7 +83,7 @@ class InvoiceActionView(StaffRequiredMixin, View):
                 messages.success(request, f"{invoice.number} is now {invoice.get_status_display().lower()}.")
         except services.BillingError as error:
             messages.error(request, str(error))
-        return redirect(request.POST.get("next") or invoice.get_absolute_url())
+        return redirect_next(request, invoice.get_absolute_url())
 
 
 class ConfirmDraftsView(StaffRequiredMixin, View):

@@ -1,5 +1,3 @@
-from datetime import date
-
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
@@ -7,6 +5,7 @@ from django.db import transaction
 from django.db.models import Count, Prefetch, Q
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
 from core.mixins import AdminRequiredMixin, StaffRequiredMixin
@@ -182,7 +181,7 @@ class PlanListView(StaffRequiredMixin, ListView):
             if data["status"] == "inactive":
                 queryset = queryset.filter(is_active=False)
             elif data["status"] == "available":
-                today = date.today()
+                today = timezone.localdate()
                 queryset = queryset.filter(is_active=True).filter(
                     Q(start_date__isnull=True) | Q(start_date__lte=today),
                     Q(end_date__isnull=True) | Q(end_date__gte=today),
@@ -192,7 +191,7 @@ class PlanListView(StaffRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["filter_form"] = self.filter_form
-        context["today"] = date.today()
+        context["today"] = timezone.localdate()
         return context
 
 

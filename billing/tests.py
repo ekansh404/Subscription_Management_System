@@ -207,3 +207,19 @@ class BillingViewTests(BillingFixtures, TestCase):
         self.client.post(reverse("billing:subscription_invoice", args=[sub.pk]))
         self.assertEqual(Invoice.objects.get().amount_discount, Decimal("180.00"))
         self.assertEqual(sub.status, Status.ACTIVE)
+
+
+class SafeRedirectTests(BillingFixtures, TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.make_catalog()
+        cls.staff = make_user("staff@example.com", role=Role.STAFF)
+
+    def test_next_cannot_point_to_another_site(self):
+        invoice = services.create_invoice(self.make_active())
+        self.client.force_login(self.staff)
+        url = reverse("billing:invoice_action", args=[invoice.pk, "confirm"])
+        response = self.client.post(url, {"next": "https://evil.example.com/"})
+        self.assertRedirects(response, invoice.get_absolute_url(), fetch_redirect_response=False)
+        response = self.client.post(reverse("billing:invoice_action", args=[invoice.pk, "send"]), {"next": "/billing/invoices/"})
+        self.assertRedirects(response, "/billing/invoices/", fetch_redirect_response=False)

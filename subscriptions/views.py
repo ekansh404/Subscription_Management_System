@@ -11,6 +11,7 @@ from django.views import View
 from django.views.generic import DetailView, FormView, ListView, TemplateView
 
 from core.mixins import AdminRequiredMixin, StaffRequiredMixin
+from core.utils.urls import redirect_next
 
 from . import services
 from .forms import (
@@ -183,7 +184,7 @@ class SubscriptionActionView(StaffRequiredMixin, View):
             messages.error(request, str(error))
         else:
             messages.success(request, f"{subscription.number}: {subscription.get_status_display()}.")
-        return redirect(request.POST.get("next") or subscription.get_absolute_url())
+        return redirect_next(request, subscription.get_absolute_url())
 
 
 # --- Quotation templates -----------------------------------------------------
