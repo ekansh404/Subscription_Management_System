@@ -1,0 +1,60 @@
+{% load core_tags %}
+{# The invoice itself; shared by the staff page, the print view and the portal. #}
+<div class="invoice-doc">
+  <div class="d-flex justify-content-between flex-wrap gap-3 mb-4">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1"><span class="brand-mark">{% icon "zap" %}</span><span class="fs-5 fw-bold">{{ app_name }} Software</span></div>
+      <div class="small text-muted">Subscription billing</div>
+    </div>
+    <div class="text-end">
+      <div class="fs-4 fw-bold">Invoice {{ invoice.number }}</div>
+      <div>{% status_badge invoice.payment_state %}</div>
+    </div>
+  </div>
+  <div class="row mb-4 g-3">
+    <div class="col-sm-6">
+      <div class="small text-muted text-uppercase fw-semibold mb-1">Bill to</div>
+      <div class="fw-semibold">{{ invoice.customer_name }}</div>
+      <div class="small">{{ invoice.customer_address|linebreaksbr }}</div>
+      <div class="small">{{ invoice.customer_email }}</div>
+      {% if invoice.customer_tax_id %}<div class="small">GSTIN: {{ invoice.customer_tax_id }}</div>{% endif %}
+    </div>
+    <div class="col-sm-6">
+      <dl class="detail-list ms-sm-auto" style="max-width: 20rem">
+        <dt>Invoice date</dt><dd>{{ invoice.invoice_date|date:"d M Y" }}</dd>
+        <dt>Due date</dt><dd>{{ invoice.due_date|date:"d M Y" }}</dd>
+        {% if invoice.period_start %}<dt>Service period</dt><dd>{{ invoice.period_start|date:"d M Y" }} – {{ invoice.period_end|date:"d M Y" }}</dd>{% endif %}
+        {% if invoice.subscription %}<dt>Subscription</dt><dd>{{ invoice.subscription.number }}</dd>{% endif %}
+      </dl>
+    </div>
+  </div>
+  <div class="table-responsive"><table class="table align-middle">
+    <thead><tr><th>Description</th><th class="text-end">Qty</th><th class="text-end">Unit price</th><th class="text-end">Discount</th><th>Taxes</th><th class="text-end">Amount</th></tr></thead>
+    <tbody>
+      {% for line in invoice.lines.all %}
+        <tr>
+          <td>{{ line.description }}</td>
+          <td class="text-end">{{ line.quantity|floatformat:"-2" }}</td>
+          <td class="text-end">{{ line.unit_price|money }}</td>
+          <td class="text-end">{% if line.discount_amount %}-{{ line.discount_amount|money }}{% else %}-{% endif %}</td>
+          <td class="small">{{ line.tax_label|default:"-" }}</td>
+          <td class="text-end fw-semibold">{{ line.amount_untaxed|money }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table></div>
+  <div class="d-flex justify-content-between flex-wrap gap-3">
+    <div class="small text-muted" style="max-width: 24rem">
+      {% for applied in invoice.applied_discounts.all %}<div>{% icon "tag" "me-1" %}{{ applied.label }}: -{{ applied.amount|money }}</div>{% endfor %}
+      {% if invoice.notes %}<div class="mt-2">{{ invoice.notes|linebreaksbr }}</div>{% endif %}
+    </div>
+    <dl class="totals mb-0">
+      {% if invoice.amount_discount %}<dt>Before discount</dt><dd>{{ invoice.amount_untaxed|add:invoice.amount_discount|money }}</dd><dt>Discount</dt><dd>-{{ invoice.amount_discount|money }}</dd>{% endif %}
+      <dt>Untaxed</dt><dd>{{ invoice.amount_untaxed|money }}</dd>
+      <dt>Taxes</dt><dd>{{ invoice.amount_tax|money }}</dd>
+      <dt class="grand">Total</dt><dd class="grand">{{ invoice.amount_total|money }}</dd>
+      {% if invoice.amount_paid %}<dt>Paid</dt><dd>-{{ invoice.amount_paid|money }}</dd>{% endif %}
+      <dt class="grand">Amount due</dt><dd class="grand">{{ invoice.amount_due|money }}</dd>
+    </dl>
+  </div>
+</div>

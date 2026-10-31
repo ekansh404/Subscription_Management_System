@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}Billing run{% endblock %}
+{% block topbar_title %}Billing run{% endblock %}
+{% block page_title %}Billing day{% endblock %}
+{% block page_subtitle %}Creates every invoice that is due. Safe to run any number of times: nothing is billed twice and no period is skipped.{% endblock %}
+{% block content %}
+  <div class="row g-3 mb-3">
+    <div class="col-sm-6 col-xl-3">{% include "partials/_stat_card.html" with label="Subscriptions due today" value=due_count icon="repeat" tone="primary" %}</div>
+    <div class="col-sm-6 col-xl-3">{% include "partials/_stat_card.html" with label="Starting today" value=starting_count icon="play" tone="success" %}</div>
+  </div>
+  <div class="row g-3">
+    <div class="col-lg-5">
+      <div class="card"><div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% include "partials/_form_fields.html" with form=form %}
+          <button type="submit" class="btn btn-primary">{% icon "zap" "me-1" %}Run billing</button>
+        </form>
+        <p class="small text-muted mt-3 mb-0">Also available as a scheduled job: <code>python manage.py run_billing</code>.</p>
+      </div></div>
+    </div>
+    <div class="col-lg-7">
+      {% if result %}
+        <div class="card table-card mb-3">
+          <div class="card-header fw-semibold">Result for {{ result.run_date|date:"d M Y" }} · {{ result.invoices|length }} invoice(s), {{ result.invoiced_amount|money }}</div>
+          <div class="card-body p-0">
+            {% if result.invoices %}
+              <div class="table-responsive"><table class="table align-middle mb-0">
+                <thead><tr><th>Invoice</th><th>Customer</th><th>Period</th><th class="text-end">Total</th></tr></thead>
+                <tbody>
+                  {% for invoice in result.invoices %}
+                    <tr><td><a href="{{ invoice.get_absolute_url }}" class="row-link">{{ invoice.number }}</a></td><td>{{ invoice.customer_name }}</td><td class="small">{{ invoice.period_start|date:"d M" }} – {{ invoice.period_end|date:"d M Y" }}</td><td class="text-end">{{ invoice.amount_total|money }}</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table></div>
+            {% else %}
+              {% include "partials/_empty_state.html" with icon="check-circle" title="Nothing was due" text="Every active subscription is already invoiced up to this date." %}
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+      <div class="card table-card">
+        <div class="card-header fw-semibold">Due now</div>
+        <div class="card-body p-0">
+          {% if due %}
+            <div class="table-responsive"><table class="table align-middle mb-0">
+              <thead><tr><th>Subscription</th><th>Customer</th><th>Next invoice</th><th class="text-end">Per period</th></tr></thead>
+              <tbody>
+                {% for sub in due %}
+                  <tr><td><a href="{{ sub.get_absolute_url }}" class="row-link">{{ sub.number }}</a></td><td>{{ sub.customer.name }}</td><td>{{ sub.next_invoice_date|date:"d M Y" }}</td><td class="text-end">{{ sub.amount_total|money }}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table></div>
+          {% else %}
+            {% include "partials/_empty_state.html" with icon="check-circle" title="All caught up" text="No active subscription has a billing period due today." %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ invoice.number }}{% endblock %}
+{% block topbar_title %}Invoices{% endblock %}
+{% block page_title %}{{ invoice.number }}{% endblock %}
+{% block page_subtitle %}<a href="{{ invoice.customer.get_absolute_url }}">{{ invoice.customer_name }}</a>{% if invoice.sent_at %} · emailed {{ invoice.sent_at|date:"d M Y, H:i" }}{% endif %}{% endblock %}
+{% block page_actions %}
+  {% block payment_actions %}{% endblock %}
+  {% if invoice.status == "draft" %}{% url 'billing:invoice_action' invoice.pk 'confirm' as u %}{% include "partials/_action_form.html" with url=u label="Confirm" css="btn-primary" icon="check" %}{% endif %}
+  {% if invoice.status != "cancelled" %}{% url 'billing:invoice_action' invoice.pk 'send' as u %}{% include "partials/_action_form.html" with url=u label="Send by email" css="btn-outline-primary" icon="send" %}{% endif %}
+  <a href="{% url 'billing:invoice_print' invoice.pk %}" class="btn btn-light btn-sm">{% icon "printer" "me-1" %}Print</a>
+  {% if invoice.status == "draft" or invoice.status == "confirmed" %}{% if not invoice.amount_paid %}{% url 'billing:invoice_action' invoice.pk 'cancel' as u %}{% include "partials/_action_form.html" with url=u label="Cancel" css="btn-outline-danger" icon="x-circle" confirm="Cancel this invoice? If it is the latest period it will be billed again on the next run." %}{% endif %}{% endif %}
+{% endblock %}
+{% block content %}
+  <div class="row g-3">
+    <div class="col-xl-9"><div class="card"><div class="card-body p-4">{% include "billing/_invoice_document.html" %}</div></div></div>
+    <div class="col-xl-3">{% block invoice_side %}{% endblock %}</div>
+  </div>
+{% endblock %}

@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.conf import settings
 from django.contrib import messages
 from django.db import transaction
@@ -82,6 +83,11 @@ class SubscriptionDetailView(StaffRequiredMixin, DetailView):
         context["actions"] = [
             (name, *ACTION_BUTTONS[name]) for name in services.available_actions(self.object)
         ]
+        # Billing data through reverse relations (the billing app builds on this one).
+        if apps.is_installed("billing"):
+            context["invoices"] = self.object.invoices.all()[:24]
+            Discount = apps.get_model("billing", "Discount")
+            context["available_discounts"] = Discount.objects.filter(is_active=True).exclude(subscriptions=self.object)
         return context
 
 

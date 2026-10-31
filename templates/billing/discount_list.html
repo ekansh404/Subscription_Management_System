@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}Discounts{% endblock %}
+{% block topbar_title %}Discounts{% endblock %}
+{% block page_title %}Discount rules{% endblock %}
+{% block page_subtitle %}Only administrators create rules. Staff attach them to subscriptions; they apply on the next invoice by themselves.{% endblock %}
+{% block page_actions %}<a href="{% url 'billing:discount_create' %}" class="btn btn-primary btn-sm">{% icon "plus" "me-1" %}New discount</a>{% endblock %}
+{% block content %}
+  <div class="card table-card"><div class="card-body p-0">
+    {% if discounts %}
+      <div class="table-responsive"><table class="table table-hover align-middle">
+        <thead><tr><th>Discount</th><th>Code</th><th>Value</th><th>Applies to</th><th>Conditions</th><th>Valid</th><th class="text-end">Used</th><th class="text-end">Subscriptions</th><th>State</th></tr></thead>
+        <tbody>
+          {% for discount in discounts %}
+            <tr>
+              <td><a href="{{ discount.get_absolute_url }}" class="row-link">{{ discount.name }}</a></td>
+              <td><code>{{ discount.code }}</code></td>
+              <td>{{ discount.value_label }}</td>
+              <td>{{ discount.get_scope_display }}</td>
+              <td class="small">{% if discount.min_quantity %}min qty {{ discount.min_quantity|floatformat:"-2" }}{% endif %}{% if discount.min_purchase %} · min {{ discount.min_purchase|money }}{% endif %}{% if not discount.min_quantity and not discount.min_purchase %}-{% endif %}</td>
+              <td class="small">{{ discount.start_date|date:"d M Y"|default:"Any time" }} → {{ discount.end_date|date:"d M Y"|default:"open" }}</td>
+              <td class="text-end">{{ discount.used_count }}{% if discount.usage_limit %} / {{ discount.usage_limit }}{% endif %}</td>
+              <td class="text-end">{{ discount.subscription_count }}</td>
+              <td>{% status_badge discount.state %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table></div>
+    {% else %}
+      {% url 'billing:discount_create' as create_url %}
+      {% include "partials/_empty_state.html" with icon="tag" title="No discount rules yet" text="Example: 10% off for 10 seats or more, 50 uses." cta_url=create_url cta_label="New discount" %}
+    {% endif %}
+  </div></div>
+{% endblock %}

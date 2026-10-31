@@ -1,0 +1,4 @@
+{% extends "base_print.html" %}
+{% block title %}{{ invoice.number }}{% endblock %}
+{% block back_url %}{{ back_url|default:invoice.get_absolute_url }}{% endblock %}
+{% block content %}{% include "billing/_invoice_document.html" %}{% endblock %}

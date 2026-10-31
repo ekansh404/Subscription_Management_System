@@ -6,7 +6,7 @@
 {% block page_subtitle %}<a href="{{ subscription.customer.get_absolute_url }}">{{ subscription.customer.display_name }}</a> · {{ subscription.plan }}{% endblock %}
 {% block page_actions %}
   {% if subscription.is_editable %}<a href="{% url 'subscriptions:subscription_update' subscription.pk %}" class="btn btn-light btn-sm">{% icon "pencil" "me-1" %}Edit</a>{% endif %}
-  {% block extra_actions %}{% endblock %}
+  {% if subscription.status == "active" %}{% url 'billing:subscription_invoice' subscription.pk as invoice_url %}{% include "partials/_action_form.html" with url=invoice_url label="Invoice now" css="btn-outline-primary" icon="file-text" %}{% endif %}
   {% for name, label, css, icon_name, confirm in actions %}
     {% url 'subscriptions:subscription_action' subscription.pk name as action_url %}
     {% include "partials/_action_form.html" with url=action_url label=label css=css icon=icon_name confirm=confirm %}
@@ -45,7 +45,30 @@
           </div>
         </div>
       </div>
-      {% block related %}{% endblock %}
+      <div class="card table-card">
+        <div class="card-header fw-semibold">Invoices</div>
+        <div class="card-body p-0">
+          {% if invoices %}
+            <div class="table-responsive"><table class="table table-hover align-middle mb-0">
+              <thead><tr><th>Invoice</th><th>Period</th><th>Due</th><th class="text-end">Total</th><th class="text-end">Amount due</th><th>State</th></tr></thead>
+              <tbody>
+                {% for invoice in invoices %}
+                  <tr>
+                    <td><a href="{{ invoice.get_absolute_url }}" class="row-link">{{ invoice.number }}</a></td>
+                    <td class="small">{{ invoice.period_start|date:"d M" }} – {{ invoice.period_end|date:"d M Y" }}</td>
+                    <td>{{ invoice.due_date|date:"d M Y" }}</td>
+                    <td class="text-end">{{ invoice.amount_total|money }}</td>
+                    <td class="text-end">{{ invoice.amount_due|money }}</td>
+                    <td>{% status_badge invoice.payment_state %}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table></div>
+          {% else %}
+            {% include "partials/_empty_state.html" with icon="file-text" title="No invoices yet" text="Invoices are created on billing day once the subscription is active." %}
+          {% endif %}
+        </div>
+      </div>
     </div>
     <div class="col-xl-4">
       <div class="card mb-3"><div class="card-body">
@@ -63,6 +86,28 @@
           {% if subscription.closed_on %}<dt>Closed on</dt><dd>{{ subscription.closed_on|date:"d M Y" }}</dd>{% endif %}
         </dl>
       </div></div>
+      <div class="card mb-3">
+        <div class="card-header fw-semibold">{% icon "tag" "me-1" %}Discounts</div>
+        <ul class="list-group list-group-flush">
+          {% for discount in subscription.discounts.all %}
+            <li class="list-group-item d-flex justify-content-between align-items-center gap-2">
+              <div class="min-w-0"><div class="fw-semibold small">{{ discount.name }}</div><div class="small text-muted">{{ discount.value_label }} · {{ discount.get_scope_display|lower }} · {{ discount.state }}</div></div>
+              <form method="post" action="{% url 'billing:subscription_discount' subscription.pk %}">{% csrf_token %}<input type="hidden" name="discount" value="{{ discount.pk }}"><input type="hidden" name="remove" value="1"><button class="btn btn-light btn-sm" title="Remove">{% icon "x" %}</button></form>
+            </li>
+          {% empty %}
+            <li class="list-group-item small text-muted">No discount attached.</li>
+          {% endfor %}
+        </ul>
+        {% if available_discounts %}
+          <div class="card-body">
+            <form method="post" action="{% url 'billing:subscription_discount' subscription.pk %}" class="d-flex gap-2">
+              {% csrf_token %}
+              <select name="discount" class="form-select form-select-sm" aria-label="Discount">{% for discount in available_discounts %}<option value="{{ discount.pk }}">{{ discount }}</option>{% endfor %}</select>
+              <button class="btn btn-outline-primary btn-sm text-nowrap" type="submit">{% icon "plus" "me-1" %}Apply</button>
+            </form>
+          </div>
+        {% endif %}
+      </div>
       {% if subscription.notes %}<div class="card mb-3"><div class="card-header fw-semibold">Terms and notes</div><div class="card-body small">{{ subscription.notes|linebreaksbr }}</div></div>{% endif %}
       <div class="card"><div class="card-header fw-semibold">{% icon "clock" "me-1" %}Timeline</div><div class="card-body">
         <ul class="timeline">
