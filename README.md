@@ -49,6 +49,8 @@ python manage.py runserver             # open http://127.0.0.1:8000
 macOS / Linux: the same, with `python3 -m venv .venv` and `source .venv/bin/activate`.
 Add your own administrator any time with `python manage.py createsuperuser`.
 
+Free hosting: step-by-step guide for PythonAnywhere in [docs/deploy.md](docs/deploy.md).
+
 ### Demo logins
 
 | Role | Email | Password | Sees |
