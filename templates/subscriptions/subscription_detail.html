@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ subscription.number }}{% endblock %}
+{% block topbar_title %}Subscriptions{% endblock %}
+{% block page_title %}{{ subscription.number }} {% status_badge subscription.status subscription.get_status_display %}{% endblock %}
+{% block page_subtitle %}<a href="{{ subscription.customer.get_absolute_url }}">{{ subscription.customer.display_name }}</a> · {{ subscription.plan }}{% endblock %}
+{% block page_actions %}
+  {% if subscription.is_editable %}<a href="{% url 'subscriptions:subscription_update' subscription.pk %}" class="btn btn-light btn-sm">{% icon "pencil" "me-1" %}Edit</a>{% endif %}
+  {% block extra_actions %}{% endblock %}
+  {% for name, label, css, icon_name, confirm in actions %}
+    {% url 'subscriptions:subscription_action' subscription.pk name as action_url %}
+    {% include "partials/_action_form.html" with url=action_url label=label css=css icon=icon_name confirm=confirm %}
+  {% endfor %}
+{% endblock %}
+{% block content %}
+  <ol class="stepper">
+    {% for code, label, state in subscription.pipeline %}<li class="{{ state }}">{{ label }}</li>{% endfor %}
+  </ol>
+  <div class="row g-3">
+    <div class="col-xl-8">
+      <div class="card table-card mb-3">
+        <div class="card-header fw-semibold">Product lines <span class="text-muted fw-normal">· billed {{ subscription.plan.get_billing_period_display|lower }}</span></div>
+        <div class="card-body p-0"><div class="table-responsive"><table class="table align-middle mb-0">
+          <thead><tr><th>Product</th><th class="text-end">Qty</th><th class="text-end">Unit price</th><th>Taxes</th><th class="text-end">Amount</th></tr></thead>
+          <tbody>
+            {% for line in subscription.lines.all %}
+              <tr>
+                <td>{{ line }}</td>
+                <td class="text-end">{{ line.quantity|floatformat:"-2" }}</td>
+                <td class="text-end">{{ line.unit_price|money }}</td>
+                <td>{% for tax in line.taxes.all %}<span class="badge text-bg-light">{{ tax.name }} {{ tax.rate|percent }}</span> {% empty %}-{% endfor %}</td>
+                <td class="text-end fw-semibold">{{ line.amount_untaxed|money }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="5" class="text-center text-muted py-4">No lines yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table></div>
+          <div class="d-flex justify-content-end p-3">
+            <dl class="totals mb-0">
+              <dt>Untaxed</dt><dd>{{ subscription.amount_untaxed|money }}</dd>
+              <dt>Taxes</dt><dd>{{ subscription.amount_tax|money }}</dd>
+              <dt class="grand">Total / {{ subscription.plan.get_billing_period_display|lower }}</dt><dd class="grand">{{ subscription.amount_total|money }}</dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+      {% block related %}{% endblock %}
+    </div>
+    <div class="col-xl-4">
+      <div class="card mb-3"><div class="card-body">
+        <dl class="detail-list">
+          <dt>Customer</dt><dd><a href="{{ subscription.customer.get_absolute_url }}">{{ subscription.customer.name }}</a></dd>
+          <dt>Plan</dt><dd><a href="{{ subscription.plan.get_absolute_url }}">{{ subscription.plan.name }}</a></dd>
+          <dt>Start date</dt><dd>{{ subscription.start_date|date:"d M Y" }}</dd>
+          <dt>Expiry date</dt><dd>{{ subscription.expiry_date|date:"d M Y"|default:"Open-ended" }}</dd>
+          <dt>Payment terms</dt><dd>{{ subscription.get_payment_term_days_display }}</dd>
+          {% if subscription.quotation_valid_until %}<dt>Quote valid until</dt><dd>{{ subscription.quotation_valid_until|date:"d M Y" }}</dd>{% endif %}
+          <dt>Next invoice</dt><dd>{{ subscription.next_invoice_date|date:"d M Y"|default:"-" }}</dd>
+          <dt>MRR</dt><dd>{{ subscription.mrr|money }}</dd>
+          <dt>Salesperson</dt><dd>{{ subscription.salesperson.display_name|default:"-" }}</dd>
+          {% if subscription.template %}<dt>Template</dt><dd>{{ subscription.template.name }}</dd>{% endif %}
+          {% if subscription.closed_on %}<dt>Closed on</dt><dd>{{ subscription.closed_on|date:"d M Y" }}</dd>{% endif %}
+        </dl>
+      </div></div>
+      {% if subscription.notes %}<div class="card mb-3"><div class="card-header fw-semibold">Terms and notes</div><div class="card-body small">{{ subscription.notes|linebreaksbr }}</div></div>{% endif %}
+      <div class="card"><div class="card-header fw-semibold">{% icon "clock" "me-1" %}Timeline</div><div class="card-body">
+        <ul class="timeline">
+          {% for event in subscription.events.all %}
+            <li><div class="small fw-semibold">{{ event.message }}</div><div class="small text-muted">{{ event.created_at|date:"d M Y, H:i" }}{% if event.user %} · {{ event.user.display_name }}{% else %} · system{% endif %}</div></li>
+          {% endfor %}
+        </ul>
+      </div></div>
+    </div>
+  </div>
+{% endblock %}

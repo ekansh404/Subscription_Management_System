@@ -48,9 +48,34 @@
       {% endif %}
     </div>
     <div class="col-lg-8">
-      {% block customer_related %}
-        {% include "partials/_empty_state.html" with icon="repeat" title="No subscriptions yet" text="Subscriptions and invoices for this customer will appear here." %}
-      {% endblock %}
+      <div class="card table-card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="fw-semibold">Subscriptions</span>
+          <a href="{% url 'subscriptions:subscription_create' %}?customer={{ customer.pk }}" class="btn btn-primary btn-sm">{% icon "plus" "me-1" %}New subscription</a>
+        </div>
+        <div class="card-body p-0">
+          {% if subscriptions %}
+            <div class="table-responsive"><table class="table table-hover align-middle mb-0">
+              <thead><tr><th>Number</th><th>Plan</th><th>Start</th><th>Next invoice</th><th class="text-end">Per period</th><th>Status</th></tr></thead>
+              <tbody>
+                {% for sub in subscriptions %}
+                  <tr>
+                    <td><a href="{{ sub.get_absolute_url }}" class="row-link">{{ sub.number }}</a></td>
+                    <td>{{ sub.plan.name }}</td>
+                    <td>{{ sub.start_date|date:"d M Y" }}</td>
+                    <td>{{ sub.next_invoice_date|date:"d M Y"|default:"-" }}</td>
+                    <td class="text-end">{{ sub.amount_total|money }}</td>
+                    <td>{% status_badge sub.status sub.get_status_display %}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table></div>
+          {% else %}
+            {% include "partials/_empty_state.html" with icon="repeat" title="No subscriptions yet" text="Quote this customer from a template or start a subscription." %}
+          {% endif %}
+        </div>
+      </div>
+      {% block customer_extra %}{% endblock %}
     </div>
   </div>
 {% endblock %}

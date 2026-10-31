@@ -54,6 +54,11 @@ class CustomerDetailView(StaffRequiredMixin, DetailView):
     def get_queryset(self):
         return Customer.objects.select_related("user")
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["subscriptions"] = self.object.subscriptions.select_related("plan")[:50]
+        return context
+
 
 class CustomerCreateView(StaffRequiredMixin, SuccessMessageMixin, CreateView):
     model = Customer

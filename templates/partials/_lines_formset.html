@@ -1,0 +1,48 @@
+{% load core_tags %}
+{# Editable product lines with live totals (see initFormset in app.js). #}
+<div class="card mb-3" data-formset data-prefix="{{ formset.prefix }}">
+  <div class="card-header fw-semibold">{{ title|default:"Product lines" }}</div>
+  <div class="card-body p-0">
+    {{ formset.management_form }}
+    {% if formset.non_form_errors %}<div class="alert alert-danger m-3">{{ formset.non_form_errors }}</div>{% endif %}
+    <div class="table-responsive">
+      <table class="table align-middle mb-0 lines-table">
+        <thead><tr>
+          <th style="min-width:16rem">Product</th><th style="width:7rem">Quantity</th><th style="width:9rem">Unit price</th>
+          {% if show_taxes %}<th style="min-width:9rem">Taxes</th>{% endif %}
+          <th class="text-end" style="width:9rem">Amount</th><th class="actions-cell"></th>
+        </tr></thead>
+        <tbody data-formset-body>
+          {% for line in formset %}
+            <tr class="formset-row">
+              {% for hidden in line.hidden_fields %}{{ hidden }}{% endfor %}
+              <td>{{ line.variant }}{% for e in line.variant.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}{% for e in line.non_field_errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</td>
+              <td>{{ line.quantity }}{% for e in line.quantity.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</td>
+              <td>{{ line.unit_price }}{% for e in line.unit_price.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</td>
+              {% if show_taxes %}<td>{{ line.taxes }}</td>{% endif %}
+              <td class="text-end fw-semibold" data-cell="line_total"></td>
+              <td class="actions-cell"><span class="d-none">{{ line.DELETE }}</span><button type="button" class="btn btn-light btn-sm" data-formset-remove title="Remove line">{% icon "trash" %}</button></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <template data-formset-empty>
+      <tr class="formset-row">
+        {% for hidden in formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
+        <td>{{ formset.empty_form.variant }}</td><td>{{ formset.empty_form.quantity }}</td><td>{{ formset.empty_form.unit_price }}</td>
+        {% if show_taxes %}<td>{{ formset.empty_form.taxes }}</td>{% endif %}
+        <td class="text-end fw-semibold" data-cell="line_total"></td>
+        <td class="actions-cell"><span class="d-none">{{ formset.empty_form.DELETE }}</span><button type="button" class="btn btn-light btn-sm" data-formset-remove>{% icon "trash" %}</button></td>
+      </tr>
+    </template>
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 p-3">
+      <button type="button" class="btn btn-outline-primary btn-sm" data-formset-add>{% icon "plus" "me-1" %}Add a line</button>
+      <dl class="totals mb-0">
+        <dt>Untaxed</dt><dd data-total="untaxed"></dd>
+        {% if show_taxes %}<dt>Taxes</dt><dd data-total="tax"></dd>{% endif %}
+        <dt class="grand">Total{% if period_label %} / {{ period_label }}{% endif %}</dt><dd class="grand" data-total="total"></dd>
+      </dl>
+    </div>
+  </div>
+</div>

@@ -130,8 +130,13 @@
           const option = variant.selectedOptions[0];
           if (option && option.dataset.price !== undefined) {
             price.value = parseFloat(option.dataset.price).toFixed(2);
-            recalc();
           }
+          const taxes = row.querySelector('[data-field="taxes"]');
+          if (option && taxes && option.dataset.taxes !== undefined) {
+            const ids = option.dataset.taxes.split(",").filter(Boolean);
+            Array.from(taxes.options).forEach((tax) => (tax.selected = ids.includes(tax.value)));
+          }
+          recalc();
         });
       }
       const remove = row.querySelector("[data-formset-remove]");
