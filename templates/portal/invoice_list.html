@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}My invoices{% endblock %}
+{% block topbar_title %}My invoices{% endblock %}
+{% block page_title %}My invoices{% endblock %}
+{% block page_subtitle %}Download any invoice as PDF from its page.{% endblock %}
+{% block content %}
+  <div class="status-tabs">{% for code, label in states %}<a href="?state={{ code }}" class="badge rounded-pill {% if state == code %}text-bg-primary{% else %}text-bg-light{% endif %}">{{ label }}</a>{% endfor %}</div>
+  <div class="card table-card"><div class="card-body p-0">
+    {% if invoices %}
+      <div class="table-responsive"><table class="table table-hover align-middle">
+        <thead><tr><th>Invoice</th><th>Date</th><th>Due</th><th class="text-end">Total</th><th class="text-end">To pay</th><th>State</th></tr></thead>
+        <tbody>{% for invoice in invoices %}<tr><td><a href="{% url 'portal:invoice_detail' invoice.pk %}" class="row-link">{{ invoice.number }}</a></td><td>{{ invoice.invoice_date|date:"d M Y" }}</td><td>{{ invoice.due_date|date:"d M Y" }}</td><td class="text-end">{{ invoice.amount_total|money }}</td><td class="text-end">{{ invoice.amount_due|money }}</td><td>{% status_badge invoice.payment_state %}</td></tr>{% endfor %}</tbody>
+      </table></div>
+    {% else %}
+      {% include "partials/_empty_state.html" with icon="file-text" title="No invoices here" %}
+    {% endif %}
+  </div></div>
+  {% include "partials/_pagination.html" %}
+{% endblock %}

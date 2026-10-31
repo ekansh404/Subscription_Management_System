@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}Receivables{% endblock %}
+{% block topbar_title %}Receivables{% endblock %}
+{% block page_title %}Receivables{% endblock %}
+{% block page_subtitle %}What is still owed, oldest first, so overdue invoices are chased before they become lost revenue.{% endblock %}
+{% block content %}
+  <div class="row g-3 mb-3">
+    <div class="col-sm-6 col-xl-3">{% include "partials/_stat_card.html" with label="Outstanding" value=total_outstanding|money icon="wallet" tone="warning" %}</div>
+    <div class="col-sm-6 col-xl-3">{% include "partials/_stat_card.html" with label="Overdue" value=total_overdue|money icon="alert" tone="danger" %}</div>
+  </div>
+  <div class="row g-3">
+    <div class="col-xl-8">
+      {% for name, bucket in buckets.items %}
+        <div class="card table-card mb-3">
+          <div class="card-header d-flex justify-content-between"><span class="fw-semibold">{{ name }}</span><span>{{ bucket.invoices|length }} · {{ bucket.total|money }}</span></div>
+          {% if bucket.invoices %}
+            <div class="card-body p-0"><div class="table-responsive"><table class="table align-middle mb-0">
+              <thead><tr><th>Invoice</th><th>Customer</th><th>Due date</th><th class="text-end">Amount due</th><th class="actions-cell"></th></tr></thead>
+              <tbody>
+                {% for invoice in bucket.invoices %}
+                  <tr>
+                    <td><a href="{{ invoice.get_absolute_url }}" class="row-link">{{ invoice.number }}</a></td>
+                    <td>{{ invoice.customer_name }}</td>
+                    <td>{{ invoice.due_date|date:"d M Y" }}</td>
+                    <td class="text-end fw-semibold">{{ invoice.due|money }}</td>
+                    <td class="actions-cell text-nowrap">
+                      <a href="{% url 'payments:payment_create' invoice.pk %}" class="btn btn-light btn-sm" title="Register payment">{% icon "banknote" %}</a>
+                      {% if name != "Not yet due" %}{% url 'payments:payment_remind' invoice.pk as remind_url %}{% include "partials/_action_form.html" with url=remind_url label="" icon="mail" css="btn-light" title="Email a reminder" next=request.get_full_path %}{% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table></div></div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+    <div class="col-xl-4">
+      <div class="card"><div class="card-header fw-semibold">Largest overdue balances</div>
+        <ul class="list-group list-group-flush">
+          {% for row in top_debtors %}
+            <li class="list-group-item d-flex justify-content-between"><a href="{% url 'customers:detail' row.customer__id %}">{{ row.customer__name }}</a><span class="fw-semibold text-danger">{{ row.total|money }}</span></li>
+          {% empty %}
+            <li class="list-group-item text-muted small">Nothing overdue. </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+{% endblock %}

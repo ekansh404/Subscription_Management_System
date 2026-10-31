@@ -45,6 +45,8 @@ PROJECT_APPS = [
     "catalog",
     "subscriptions",
     "billing",
+    "payments",
+    "portal",
 ]
 
 INSTALLED_APPS = [

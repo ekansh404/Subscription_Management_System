@@ -5,7 +5,7 @@
 {% block page_title %}{{ invoice.number }}{% endblock %}
 {% block page_subtitle %}<a href="{{ invoice.customer.get_absolute_url }}">{{ invoice.customer_name }}</a>{% if invoice.sent_at %} · emailed {{ invoice.sent_at|date:"d M Y, H:i" }}{% endif %}{% endblock %}
 {% block page_actions %}
-  {% block payment_actions %}{% endblock %}
+  {% if invoice.status == "confirmed" %}<a href="{% url 'payments:payment_create' invoice.pk %}" class="btn btn-success btn-sm">{% icon "banknote" "me-1" %}Register payment</a>{% endif %}
   {% if invoice.status == "draft" %}{% url 'billing:invoice_action' invoice.pk 'confirm' as u %}{% include "partials/_action_form.html" with url=u label="Confirm" css="btn-primary" icon="check" %}{% endif %}
   {% if invoice.status != "cancelled" %}{% url 'billing:invoice_action' invoice.pk 'send' as u %}{% include "partials/_action_form.html" with url=u label="Send by email" css="btn-outline-primary" icon="send" %}{% endif %}
   <a href="{% url 'billing:invoice_print' invoice.pk %}" class="btn btn-light btn-sm">{% icon "printer" "me-1" %}Print</a>
@@ -14,6 +14,21 @@
 {% block content %}
   <div class="row g-3">
     <div class="col-xl-9"><div class="card"><div class="card-body p-4">{% include "billing/_invoice_document.html" %}</div></div></div>
-    <div class="col-xl-3">{% block invoice_side %}{% endblock %}</div>
+    <div class="col-xl-3">
+      <div class="card"><div class="card-header fw-semibold">{% icon "credit-card" "me-1" %}Payments</div>
+        <ul class="list-group list-group-flush">
+          {% for payment in invoice.payments.all %}
+            <li class="list-group-item">
+              <div class="d-flex justify-content-between"><a href="{{ payment.get_absolute_url }}" class="fw-semibold small">{{ payment.number }}</a><span class="fw-semibold">{{ payment.amount|money }}</span></div>
+              <div class="small text-muted">{{ payment.payment_date|date:"d M Y" }} · {{ payment.get_method_display }}{% if payment.reference %} · {{ payment.reference }}{% endif %}</div>
+              {% if payment.note %}<div class="small">{{ payment.note }}</div>{% endif %}
+            </li>
+          {% empty %}
+            <li class="list-group-item small text-muted">No payment recorded yet.</li>
+          {% endfor %}
+        </ul>
+        {% if invoice.is_overdue %}<div class="card-body">{% url 'payments:payment_remind' invoice.pk as remind_url %}{% include "partials/_action_form.html" with url=remind_url label="Email overdue reminder" icon="mail" css="btn-outline-danger w-100" %}</div>{% endif %}
+      </div>
+    </div>
   </div>
 {% endblock %}

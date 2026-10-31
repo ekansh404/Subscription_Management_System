@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}My subscriptions{% endblock %}
+{% block topbar_title %}My subscriptions{% endblock %}
+{% block page_title %}My subscriptions{% endblock %}
+{% block page_subtitle %}Pause, renew or cancel when your plan allows it; no email needed.{% endblock %}
+{% block content %}
+  <div class="card table-card"><div class="card-body p-0">
+    {% if subscriptions %}
+      <div class="table-responsive"><table class="table table-hover align-middle">
+        <thead><tr><th>Number</th><th>Plan</th><th>Start</th><th>Expiry</th><th>Next invoice</th><th class="text-end">Per period</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for sub in subscriptions %}
+            <tr>
+              <td><a href="{% url 'portal:subscription_detail' sub.pk %}" class="row-link">{{ sub.number }}</a></td>
+              <td>{{ sub.plan.name }}</td><td>{{ sub.start_date|date:"d M Y" }}</td><td>{{ sub.expiry_date|date:"d M Y"|default:"-" }}</td>
+              <td>{{ sub.next_invoice_date|date:"d M Y"|default:"-" }}</td><td class="text-end">{{ sub.amount_total|money }}</td>
+              <td>{% status_badge sub.status sub.get_status_display %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table></div>
+    {% else %}
+      {% include "partials/_empty_state.html" with icon="repeat" title="No subscriptions yet" text="When our team sends you a quotation it appears here." %}
+    {% endif %}
+  </div></div>
+  {% include "partials/_pagination.html" %}
+{% endblock %}

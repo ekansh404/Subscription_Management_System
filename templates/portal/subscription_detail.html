@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ subscription.number }}{% endblock %}
+{% block topbar_title %}My subscriptions{% endblock %}
+{% block page_title %}{{ subscription.number }} {% status_badge subscription.status subscription.get_status_display %}{% endblock %}
+{% block page_subtitle %}{{ subscription.plan.name }} · billed {{ subscription.plan.get_billing_period_display|lower }}{% endblock %}
+{% block page_actions %}
+  {% for name, label, css, icon_name, confirm in actions %}
+    {% url 'portal:subscription_action' subscription.pk name as action_url %}
+    {% include "partials/_action_form.html" with url=action_url label=label css=css icon=icon_name confirm=confirm %}
+  {% endfor %}
+{% endblock %}
+{% block content %}
+  <ol class="stepper">{% for code, label, state in subscription.pipeline %}<li class="{{ state }}">{{ label }}</li>{% endfor %}</ol>
+  <div class="row g-3">
+    <div class="col-xl-8">
+      <div class="card table-card mb-3"><div class="card-header fw-semibold">What you get</div>
+        <div class="card-body p-0"><div class="table-responsive"><table class="table align-middle mb-0">
+          <thead><tr><th>Product</th><th class="text-end">Qty</th><th class="text-end">Unit price</th><th>Taxes</th><th class="text-end">Amount</th></tr></thead>
+          <tbody>{% for line in subscription.lines.all %}<tr><td>{{ line }}</td><td class="text-end">{{ line.quantity|floatformat:"-2" }}</td><td class="text-end">{{ line.unit_price|money }}</td><td>{% for tax in line.taxes.all %}{{ tax.name }} {{ tax.rate|percent }} {% empty %}-{% endfor %}</td><td class="text-end">{{ line.amount_untaxed|money }}</td></tr>{% endfor %}</tbody>
+        </table></div>
+        <div class="d-flex justify-content-end p-3"><dl class="totals mb-0"><dt>Untaxed</dt><dd>{{ subscription.amount_untaxed|money }}</dd><dt>Taxes</dt><dd>{{ subscription.amount_tax|money }}</dd><dt class="grand">Total / {{ subscription.plan.get_billing_period_display|lower }}</dt><dd class="grand">{{ subscription.amount_total|money }}</dd></dl></div>
+      </div></div>
+      <div class="card table-card"><div class="card-header fw-semibold">Invoices</div><div class="card-body p-0">
+        {% if invoices %}
+          <div class="table-responsive"><table class="table table-hover align-middle mb-0"><tbody>
+            {% for invoice in invoices %}<tr><td><a href="{% url 'portal:invoice_detail' invoice.pk %}" class="row-link">{{ invoice.number }}</a></td><td class="small">{{ invoice.period_start|date:"d M" }} – {{ invoice.period_end|date:"d M Y" }}</td><td class="text-end">{{ invoice.amount_total|money }}</td><td>{% status_badge invoice.payment_state %}</td></tr>{% endfor %}
+          </tbody></table></div>
+        {% else %}
+          {% include "partials/_empty_state.html" with icon="file-text" title="No invoices yet" %}
+        {% endif %}
+      </div></div>
+    </div>
+    <div class="col-xl-4">
+      <div class="card mb-3"><div class="card-body"><dl class="detail-list">
+        <dt>Start date</dt><dd>{{ subscription.start_date|date:"d M Y" }}</dd>
+        <dt>Expiry date</dt><dd>{{ subscription.expiry_date|date:"d M Y"|default:"Open-ended" }}</dd>
+        <dt>Payment terms</dt><dd>{{ subscription.get_payment_term_days_display }}</dd>
+        {% if subscription.status == "quotation" and subscription.quotation_valid_until %}<dt>Offer valid until</dt><dd>{{ subscription.quotation_valid_until|date:"d M Y" }}</dd>{% endif %}
+        <dt>Next invoice</dt><dd>{{ subscription.next_invoice_date|date:"d M Y"|default:"-" }}</dd>
+      </dl></div></div>
+      <div class="card"><div class="card-header fw-semibold">What you can do</div><ul class="list-group list-group-flush small">
+        <li class="list-group-item">Pause: {% if subscription.plan.pausable %}allowed{% else %}not on this plan{% endif %}</li>
+        <li class="list-group-item">Cancel early: {% if subscription.plan.closable %}allowed{% else %}not on this plan{% endif %}</li>
+        <li class="list-group-item">Renew: {% if subscription.plan.renewable %}allowed{% else %}not on this plan{% endif %}</li>
+      </ul></div>
+      {% if subscription.notes %}<div class="card mt-3"><div class="card-header fw-semibold">Terms</div><div class="card-body small">{{ subscription.notes|linebreaksbr }}</div></div>{% endif %}
+    </div>
+  </div>
+{% endblock %}

@@ -1,6 +1,6 @@
 {% load core_tags %}
 {# One-click POST action: {% include "partials/_action_form.html" with url=... label="Confirm" css="btn-primary" icon="check" confirm="Confirm this invoice?" %} #}
-<form method="post" action="{{ url }}" class="d-inline-block" {% if confirm %}data-confirm="{{ confirm }}"{% endif %}>
+<form method="post" action="{{ url }}" class="d-inline-block{% if form_css %} {{ form_css }}{% endif %}" {% if confirm %}data-confirm="{{ confirm }}"{% endif %}>
   {% csrf_token %}
   {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
   <button type="submit" class="btn btn-sm {{ css|default:'btn-outline-secondary' }}" {% if disabled %}disabled{% endif %} {% if title %}title="{{ title }}"{% endif %}>

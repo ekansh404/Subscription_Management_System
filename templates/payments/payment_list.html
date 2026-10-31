@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}Payments{% endblock %}
+{% block topbar_title %}Payments{% endblock %}
+{% block page_title %}Payments received{% endblock %}
+{% block page_subtitle %}Every payment with its method, amount, date and note, matched to its invoice.{% endblock %}
+{% block page_actions %}<a href="{% url 'payments:receivables' %}" class="btn btn-primary btn-sm">{% icon "wallet" "me-1" %}Receivables</a>{% endblock %}
+{% block content %}
+  <div class="row g-3 mb-3">
+    <div class="col-sm-6 col-xl-3">{% include "partials/_stat_card.html" with label="Collected (filtered)" value=totals.total|money hint=totals.n|stringformat:"d"|add:" payment(s)" icon="banknote" tone="success" %}</div>
+    {% for row in by_method|slice:":3" %}
+      <div class="col-sm-6 col-xl-3">{% include "partials/_stat_card.html" with label=row.label value=row.total|money hint=row.n|stringformat:"d"|add:" payment(s)" icon="credit-card" tone="info" %}</div>
+    {% endfor %}
+  </div>
+  <div class="card table-card">
+    <div class="card-header">{% include "partials/_filter_form.html" with form=filter_form %}</div>
+    <div class="card-body p-0">
+      {% if payments %}
+        <div class="table-responsive"><table class="table table-hover align-middle">
+          <thead><tr><th>Payment</th><th>Date</th><th>Customer</th><th>Invoice</th><th>Method</th><th>Reference</th><th class="text-end">Amount</th></tr></thead>
+          <tbody>
+            {% for payment in payments %}
+              <tr>
+                <td><a href="{{ payment.get_absolute_url }}" class="row-link">{{ payment.number }}</a></td>
+                <td>{{ payment.payment_date|date:"d M Y" }}</td>
+                <td>{{ payment.customer.name }}</td>
+                <td><a href="{{ payment.invoice.get_absolute_url }}">{{ payment.invoice.number }}</a></td>
+                <td>{{ payment.get_method_display }}</td>
+                <td class="small">{{ payment.reference|default:"-" }}</td>
+                <td class="text-end fw-semibold">{{ payment.amount|money }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table></div>
+      {% else %}
+        {% include "partials/_empty_state.html" with icon="credit-card" title="No payments found" text="Open a confirmed invoice and click Register payment." %}
+      {% endif %}
+    </div>
+  </div>
+  {% include "partials/_pagination.html" %}
+{% endblock %}
