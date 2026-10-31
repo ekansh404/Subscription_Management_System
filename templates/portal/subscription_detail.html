@@ -19,7 +19,7 @@
           <thead><tr><th>Product</th><th class="text-end">Qty</th><th class="text-end">Unit price</th><th>Taxes</th><th class="text-end">Amount</th></tr></thead>
           <tbody>{% for line in subscription.lines.all %}<tr><td>{{ line }}</td><td class="text-end">{{ line.quantity|floatformat:"-2" }}</td><td class="text-end">{{ line.unit_price|money }}</td><td>{% for tax in line.taxes.all %}{{ tax.name }} {{ tax.rate|percent }} {% empty %}-{% endfor %}</td><td class="text-end">{{ line.amount_untaxed|money }}</td></tr>{% endfor %}</tbody>
         </table></div>
-        <div class="d-flex justify-content-end p-3"><dl class="totals mb-0"><dt>Untaxed</dt><dd>{{ subscription.amount_untaxed|money }}</dd><dt>Taxes</dt><dd>{{ subscription.amount_tax|money }}</dd><dt class="grand">Total / {{ subscription.plan.get_billing_period_display|lower }}</dt><dd class="grand">{{ subscription.amount_total|money }}</dd></dl></div>
+        <div class="d-flex justify-content-end p-3"><dl class="totals mb-0"><dt>Untaxed</dt><dd>{{ subscription.amount_untaxed|money }}</dd><dt>Taxes</dt><dd>{{ subscription.amount_tax|money }}</dd><dt class="grand">Total / {{ subscription.plan.period_noun }}</dt><dd class="grand">{{ subscription.amount_total|money }}</dd></dl></div>
       </div></div>
       <div class="card table-card"><div class="card-header fw-semibold">Invoices</div><div class="card-body p-0">
         {% if invoices %}

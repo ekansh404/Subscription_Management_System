@@ -15,7 +15,7 @@
   <div class="row g-3">
     <div class="col-xl-9"><div class="card"><div class="card-body p-4">{% include "billing/_invoice_document.html" %}</div></div></div>
     <div class="col-xl-3">
-      <div class="card"><div class="card-header fw-semibold">{% icon "credit-card" "me-1" %}Payments</div>
+      <div class="card"><div class="card-header fw-semibold"><span>{% icon "credit-card" "me-1" %}Payments</span></div>
         <ul class="list-group list-group-flush">
           {% for payment in invoice.payments.all %}
             <li class="list-group-item">

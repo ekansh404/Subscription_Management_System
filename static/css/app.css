@@ -206,8 +206,9 @@ a:hover { text-decoration: underline; }
 }
 
 /* --- line editor, totals, status stepper ---------------------------------- */
-.lines-table select[multiple] { min-height: 2.2rem; height: 2.2rem; }
-.lines-table select[multiple]:focus { height: 5.5rem; position: relative; z-index: 2; }
+.lines-table select[multiple] { height: 3.6rem; padding: 0.15rem 0.35rem; font-size: 0.8rem; background-image: none; }
+.lines-table select[multiple] option { padding: 0.1rem 0.25rem; border-radius: 0.25rem; }
+.lines-table select[multiple] option:checked { background: var(--bl-primary-soft); color: var(--bl-primary); }
 .totals { display: grid; grid-template-columns: max-content minmax(8rem, max-content); gap: 0.3rem 1.5rem; text-align: right; }
 .totals dt { color: var(--bl-muted); font-weight: 500; }
 .totals dd { margin: 0; font-weight: 600; }

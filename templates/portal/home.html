@@ -7,7 +7,7 @@
 {% block content %}
   {% for quote in quotations %}
     <div class="alert alert-info d-flex flex-wrap justify-content-between align-items-center gap-2">
-      <span>{% icon "send" "me-1" %}Quotation <strong>{{ quote.number }}</strong> for {{ quote.plan.name }} ({{ quote.amount_total|money }} per {{ quote.plan.get_billing_period_display|lower }}) is waiting for you{% if quote.quotation_valid_until %}, valid until {{ quote.quotation_valid_until|date:"d M Y" }}{% endif %}.</span>
+      <span>{% icon "send" "me-1" %}Quotation <strong>{{ quote.number }}</strong> for {{ quote.plan.name }} ({{ quote.amount_total|money }} per {{ quote.plan.period_noun }}) is waiting for you{% if quote.quotation_valid_until %}, valid until {{ quote.quotation_valid_until|date:"d M Y" }}{% endif %}.</span>
       <a href="{% url 'portal:subscription_detail' quote.pk %}" class="btn btn-primary btn-sm">Review &amp; accept</a>
     </div>
   {% endfor %}
@@ -23,7 +23,7 @@
         {% if subscriptions %}
           <div class="table-responsive"><table class="table table-hover align-middle mb-0"><tbody>
             {% for sub in subscriptions %}
-              <tr><td><a href="{% url 'portal:subscription_detail' sub.pk %}" class="row-link">{{ sub.number }}</a><div class="small text-muted">{{ sub.plan.name }}</div></td><td class="text-end">{{ sub.amount_total|money }}<div class="small text-muted">per {{ sub.plan.get_billing_period_display|lower }}</div></td><td>{% status_badge sub.status sub.get_status_display %}</td></tr>
+              <tr><td><a href="{% url 'portal:subscription_detail' sub.pk %}" class="row-link">{{ sub.number }}</a><div class="small text-muted">{{ sub.plan.name }}</div></td><td class="text-end">{{ sub.amount_total|money }}<div class="small text-muted">per {{ sub.plan.period_noun }}</div></td><td>{% status_badge sub.status sub.get_status_display %}</td></tr>
             {% endfor %}
           </tbody></table></div>
         {% else %}

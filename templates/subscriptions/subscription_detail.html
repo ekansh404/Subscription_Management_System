@@ -19,7 +19,7 @@
   <div class="row g-3">
     <div class="col-xl-8">
       <div class="card table-card mb-3">
-        <div class="card-header fw-semibold">Product lines <span class="text-muted fw-normal">· billed {{ subscription.plan.get_billing_period_display|lower }}</span></div>
+        <div class="card-header fw-semibold"><span>Product lines <span class="text-muted fw-normal">· billed {{ subscription.plan.get_billing_period_display|lower }}</span></span></div>
         <div class="card-body p-0"><div class="table-responsive"><table class="table align-middle mb-0">
           <thead><tr><th>Product</th><th class="text-end">Qty</th><th class="text-end">Unit price</th><th>Taxes</th><th class="text-end">Amount</th></tr></thead>
           <tbody>
@@ -40,7 +40,7 @@
             <dl class="totals mb-0">
               <dt>Untaxed</dt><dd>{{ subscription.amount_untaxed|money }}</dd>
               <dt>Taxes</dt><dd>{{ subscription.amount_tax|money }}</dd>
-              <dt class="grand">Total / {{ subscription.plan.get_billing_period_display|lower }}</dt><dd class="grand">{{ subscription.amount_total|money }}</dd>
+              <dt class="grand">Total / {{ subscription.plan.period_noun }}</dt><dd class="grand">{{ subscription.amount_total|money }}</dd>
             </dl>
           </div>
         </div>
@@ -87,7 +87,7 @@
         </dl>
       </div></div>
       <div class="card mb-3">
-        <div class="card-header fw-semibold">{% icon "tag" "me-1" %}Discounts</div>
+        <div class="card-header fw-semibold"><span>{% icon "tag" "me-1" %}Discounts</span></div>
         <ul class="list-group list-group-flush">
           {% for discount in subscription.discounts.all %}
             <li class="list-group-item d-flex justify-content-between align-items-center gap-2">
@@ -109,7 +109,7 @@
         {% endif %}
       </div>
       {% if subscription.notes %}<div class="card mb-3"><div class="card-header fw-semibold">Terms and notes</div><div class="card-body small">{{ subscription.notes|linebreaksbr }}</div></div>{% endif %}
-      <div class="card"><div class="card-header fw-semibold">{% icon "clock" "me-1" %}Timeline</div><div class="card-body">
+      <div class="card"><div class="card-header fw-semibold"><span>{% icon "clock" "me-1" %}Timeline</span></div><div class="card-body">
         <ul class="timeline">
           {% for event in subscription.events.all %}
             <li><div class="small fw-semibold">{{ event.message }}</div><div class="small text-muted">{{ event.created_at|date:"d M Y, H:i" }}{% if event.user %} · {{ event.user.display_name }}{% else %} · system{% endif %}</div></li>

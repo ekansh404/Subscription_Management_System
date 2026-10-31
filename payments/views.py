@@ -108,6 +108,7 @@ class ReceivablesView(StaffRequiredMixin, TemplateView):
     """Outstanding invoices grouped by how late they are, so overdue ones get chased first."""
 
     template_name = "payments/receivables.html"
+    ROWS_PER_BUCKET = 25
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -116,14 +117,17 @@ class ReceivablesView(StaffRequiredMixin, TemplateView):
             Invoice.objects.filter(status=InvoiceStatus.CONFIRMED)
             .select_related("customer")
             .annotate(due=F("amount_total") - F("amount_paid"))
+            .only("pk", "number", "customer_name", "due_date", "amount_total", "amount_paid", "customer_id")
             .order_by("due_date")
         )
-        buckets = OrderedDict((name, {"invoices": [], "total": Decimal("0")}) for name in
+        buckets = OrderedDict((name, {"invoices": [], "count": 0, "total": Decimal("0")}) for name in
                               ("60+ days overdue", "31–60 days overdue", "1–30 days overdue", "Not yet due"))
         for invoice in open_invoices:
             bucket = buckets[aging_bucket((today - invoice.due_date).days)]
-            bucket["invoices"].append(invoice)
+            bucket["count"] += 1
             bucket["total"] += invoice.due
+            if len(bucket["invoices"]) < self.ROWS_PER_BUCKET:  # oldest first; the rest via the invoice list
+                bucket["invoices"].append(invoice)
         context["buckets"] = buckets
         context["total_outstanding"] = sum((bucket["total"] for bucket in buckets.values()), Decimal("0"))
         context["total_overdue"] = sum((b["total"] for name, b in buckets.items() if name != "Not yet due"), Decimal("0"))
