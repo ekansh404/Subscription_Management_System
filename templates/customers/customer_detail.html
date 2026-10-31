@@ -32,7 +32,7 @@
         </div>
       </div>
       <div class="card mb-3">
-        <div class="card-header fw-semibold">{% icon "lock" "me-1" %}Portal access</div>
+        <div class="card-header fw-semibold"><span>{% icon "lock" "me-1" %}Portal access</span></div>
         <div class="card-body">
           {% if customer.has_portal_access %}
             <p class="mb-0">Signs in as <strong>{{ customer.user.email }}</strong> and sees only their own subscriptions and invoices.</p>

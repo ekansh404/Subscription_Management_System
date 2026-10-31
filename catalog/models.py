@@ -194,6 +194,11 @@ class Plan(TimeStampedModel):
         return True
 
     @property
+    def period_noun(self) -> str:
+        """'month' for monthly plans, used in 'per month' / 'Total / month'."""
+        return {"daily": "day", "weekly": "week", "monthly": "month", "yearly": "year"}[self.billing_period]
+
+    @property
     def monthly_price(self) -> Decimal:
         return dates.monthly_amount(self.price, self.billing_period)
 

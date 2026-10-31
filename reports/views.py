@@ -36,10 +36,13 @@ class DashboardView(StaffRequiredMixin, FilteredReportMixin, TemplateView):
         series = services.monthly_series(filters)
         statuses = services.status_breakdown(filters)
         plans = list(services.mrr_by_plan(filters))
+        kpi = services.kpis(filters)
+        counts = kpi["subscriptions"]
         context.update(
             filters=filters,
             filter_form=self.filter_form,
-            kpi=services.kpis(filters),
+            kpi=kpi,
+            active_hint=f"{counts['paused']} paused · {counts['quotations']} in quotation",
             top_overdue=services.top_overdue(filters),
             mrr_plans=plans,
             chart_data={

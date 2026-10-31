@@ -13,7 +13,7 @@
     <div class="col-xl-8">
       {% for name, bucket in buckets.items %}
         <div class="card table-card mb-3">
-          <div class="card-header d-flex justify-content-between"><span class="fw-semibold">{{ name }}</span><span>{{ bucket.invoices|length }} · {{ bucket.total|money }}</span></div>
+          <div class="card-header d-flex justify-content-between"><span class="fw-semibold">{{ name }}</span><span>{{ bucket.count }} · {{ bucket.total|money }}</span></div>
           {% if bucket.invoices %}
             <div class="card-body p-0"><div class="table-responsive"><table class="table align-middle mb-0">
               <thead><tr><th>Invoice</th><th>Customer</th><th>Due date</th><th class="text-end">Amount due</th><th class="actions-cell"></th></tr></thead>
@@ -31,7 +31,9 @@
                   </tr>
                 {% endfor %}
               </tbody>
-            </table></div></div>
+            </table></div>
+            {% if bucket.count > bucket.invoices|length %}<div class="p-2 small text-center"><a href="{% url 'billing:invoice_list' %}?state={% if name == 'Not yet due' %}due{% else %}overdue{% endif %}">Showing the oldest {{ bucket.invoices|length }} of {{ bucket.count }} · see all</a></div>{% endif %}
+            </div>
           {% endif %}
         </div>
       {% endfor %}

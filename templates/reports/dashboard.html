@@ -10,7 +10,7 @@
 
   {% url 'subscriptions:subscription_list' as subs_url %}{% url 'billing:invoice_list' as inv_url %}{% url 'payments:payment_list' as pay_url %}
   <div class="row g-3 mb-3">
-    <div class="col-sm-6 col-xl-3">{% include "partials/_stat_card.html" with label="Active subscriptions" value=kpi.subscriptions.active hint=kpi.subscriptions.paused|stringformat:"d"|add:" paused · "|add:kpi.subscriptions.quotations|stringformat:"d"|add:" in quotation" icon="repeat" tone="primary" url=subs_url|add:"?status=active" %}</div>
+    <div class="col-sm-6 col-xl-3">{% include "partials/_stat_card.html" with label="Active subscriptions" value=kpi.subscriptions.active hint=active_hint icon="repeat" tone="primary" url=subs_url|add:"?status=active" %}</div>
     <div class="col-sm-6 col-xl-3">{% with arr=kpi.arr|money %}{% include "partials/_stat_card.html" with label="Monthly recurring revenue" value=kpi.subscriptions.mrr|money hint="ARR "|add:arr icon="trending-up" tone="success" %}{% endwith %}</div>
     <div class="col-sm-6 col-xl-3">{% include "partials/_stat_card.html" with label="Revenue invoiced" value=kpi.billed.invoiced|money hint=kpi.billed.count|stringformat:"d"|add:" invoices in period" icon="file-text" tone="info" url=inv_url %}</div>
     <div class="col-sm-6 col-xl-3">{% if kpi.collection_rate is not None %}{% include "partials/_stat_card.html" with label="Payments collected" value=kpi.collected.amount|money hint=kpi.collection_rate|floatformat:0|add:"% of invoiced" icon="banknote" tone="success" url=pay_url %}{% else %}{% include "partials/_stat_card.html" with label="Payments collected" value=kpi.collected.amount|money icon="banknote" tone="success" url=pay_url %}{% endif %}</div>
