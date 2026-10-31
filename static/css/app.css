@@ -219,3 +219,4 @@ a:hover { text-decoration: underline; }
 .status-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; }
 .status-tabs a { text-decoration: none; }
 .status-exhausted, .status-scheduled { background: #fffbeb; color: #b45309; }
+.chart-box { position: relative; height: 280px; }

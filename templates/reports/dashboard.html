@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load static core_tags %}
+{% block title %}Dashboard{% endblock %}
+{% block topbar_title %}Dashboard{% endblock %}
+{% block page_title %}Finance dashboard{% endblock %}
+{% block page_subtitle %}{{ filters.date_from|date:"d M Y" }} – {{ filters.date_to|date:"d M Y" }} · active subscriptions, revenue, payments and overdue invoices.{% endblock %}
+{% block page_actions %}<a href="{% url 'reports:revenue' %}?{{ request.GET.urlencode }}" class="btn btn-light btn-sm">{% icon "chart" "me-1" %}Revenue report</a>{% endblock %}
+{% block content %}
+  <div class="card mb-3"><div class="card-body py-2">{% include "partials/_filter_form.html" with form=filter_form %}{% if filter_form.non_field_errors %}<div class="text-danger small mt-1">{{ filter_form.non_field_errors.0 }}</div>{% endif %}</div></div>
+
+  {% url 'subscriptions:subscription_list' as subs_url %}{% url 'billing:invoice_list' as inv_url %}{% url 'payments:payment_list' as pay_url %}
+  <div class="row g-3 mb-3">
+    <div class="col-sm-6 col-xl-3">{% include "partials/_stat_card.html" with label="Active subscriptions" value=kpi.subscriptions.active hint=kpi.subscriptions.paused|stringformat:"d"|add:" paused · "|add:kpi.subscriptions.quotations|stringformat:"d"|add:" in quotation" icon="repeat" tone="primary" url=subs_url|add:"?status=active" %}</div>
+    <div class="col-sm-6 col-xl-3">{% with arr=kpi.arr|money %}{% include "partials/_stat_card.html" with label="Monthly recurring revenue" value=kpi.subscriptions.mrr|money hint="ARR "|add:arr icon="trending-up" tone="success" %}{% endwith %}</div>
+    <div class="col-sm-6 col-xl-3">{% include "partials/_stat_card.html" with label="Revenue invoiced" value=kpi.billed.invoiced|money hint=kpi.billed.count|stringformat:"d"|add:" invoices in period" icon="file-text" tone="info" url=inv_url %}</div>
+    <div class="col-sm-6 col-xl-3">{% if kpi.collection_rate is not None %}{% include "partials/_stat_card.html" with label="Payments collected" value=kpi.collected.amount|money hint=kpi.collection_rate|floatformat:0|add:"% of invoiced" icon="banknote" tone="success" url=pay_url %}{% else %}{% include "partials/_stat_card.html" with label="Payments collected" value=kpi.collected.amount|money icon="banknote" tone="success" url=pay_url %}{% endif %}</div>
+    <div class="col-sm-6 col-xl-3">{% include "partials/_stat_card.html" with label="Outstanding" value=kpi.outstanding.amount|money hint=kpi.outstanding.count|stringformat:"d"|add:" open invoices" icon="wallet" tone="warning" url=inv_url|add:"?state=outstanding" %}</div>
+    <div class="col-sm-6 col-xl-3">{% include "partials/_stat_card.html" with label="Overdue" value=kpi.overdue.amount|money hint=kpi.overdue.count|stringformat:"d"|add:" invoices to chase" icon="alert" tone="danger" url=inv_url|add:"?state=overdue" %}</div>
+    <div class="col-sm-6 col-xl-3">{% include "partials/_stat_card.html" with label="New subscriptions" value=kpi.subscriptions.new hint="started in period" icon="user-plus" tone="primary" %}</div>
+    <div class="col-sm-6 col-xl-3">{% include "partials/_stat_card.html" with label="Closed / churned" value=kpi.subscriptions.churned hint="closed in period" icon="x-circle" tone="secondary" %}</div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-xl-8"><div class="card h-100"><div class="card-header fw-semibold">Invoiced vs collected per month</div><div class="card-body"><div class="chart-box"><canvas id="revenue-chart" aria-label="Invoiced and collected per month" role="img"></canvas></div></div></div></div>
+    <div class="col-xl-4"><div class="card h-100"><div class="card-header fw-semibold">Subscriptions by status</div><div class="card-body"><div class="chart-box"><canvas id="status-chart" aria-label="Subscriptions by status" role="img"></canvas></div></div></div></div>
+  </div>
+  <div class="row g-3">
+    <div class="col-xl-5"><div class="card h-100"><div class="card-header fw-semibold">MRR by plan</div><div class="card-body">
+      {% if mrr_plans %}<div class="chart-box"><canvas id="plan-chart" aria-label="MRR by plan" role="img"></canvas></div>{% else %}{% include "partials/_empty_state.html" with icon="layers" title="No active subscriptions" %}{% endif %}
+    </div></div></div>
+    <div class="col-xl-7"><div class="card table-card h-100"><div class="card-header d-flex justify-content-between"><span class="fw-semibold">Overdue invoices to chase</span><a href="{% url 'payments:receivables' %}" class="small">All receivables</a></div><div class="card-body p-0">
+      {% if top_overdue %}
+        <div class="table-responsive"><table class="table table-hover align-middle mb-0">
+          <thead><tr><th>Invoice</th><th>Customer</th><th>Due</th><th class="text-end">Amount due</th></tr></thead>
+          <tbody>{% for invoice in top_overdue %}<tr><td><a href="{{ invoice.get_absolute_url }}" class="row-link">{{ invoice.number }}</a></td><td>{{ invoice.customer_name }}</td><td class="text-danger">{{ invoice.due_date|date:"d M Y" }}</td><td class="text-end fw-semibold">{{ invoice.due|money }}</td></tr>{% endfor %}</tbody>
+        </table></div>
+      {% else %}
+        {% include "partials/_empty_state.html" with icon="check-circle" title="Nothing overdue" text="Every confirmed invoice is within its payment terms." %}
+      {% endif %}
+    </div></div></div>
+  </div>
+  {{ chart_data|json_script:"chart-data" }}
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'vendor/chartjs/chart.umd.js' %}"></script>
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}
