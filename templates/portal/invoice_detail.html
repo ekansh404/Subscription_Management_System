@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ invoice.number }}{% endblock %}
+{% block topbar_title %}My invoices{% endblock %}
+{% block page_title %}Invoice {{ invoice.number }}{% endblock %}
+{% block page_subtitle %}{% if invoice.amount_due %}{{ invoice.amount_due|money }} due by {{ invoice.due_date|date:"d M Y" }}{% else %}Nothing left to pay. Thank you!{% endif %}{% endblock %}
+{% block page_actions %}<a href="{% url 'portal:invoice_print' invoice.pk %}" class="btn btn-primary btn-sm">{% icon "download" "me-1" %}Download PDF</a>{% endblock %}
+{% block content %}
+  <div class="row g-3">
+    <div class="col-xl-9"><div class="card"><div class="card-body p-4">{% include "billing/_invoice_document.html" %}</div></div></div>
+    <div class="col-xl-3"><div class="card"><div class="card-header fw-semibold">Payments</div><ul class="list-group list-group-flush">
+      {% for payment in invoice.payments.all %}<li class="list-group-item"><div class="d-flex justify-content-between"><span class="small">{{ payment.payment_date|date:"d M Y" }}</span><span class="fw-semibold">{{ payment.amount|money }}</span></div><div class="small text-muted">{{ payment.get_method_display }}{% if payment.reference %} · {{ payment.reference }}{% endif %}</div></li>{% empty %}<li class="list-group-item small text-muted">No payment received yet.</li>{% endfor %}
+    </ul></div></div>
+  </div>
+{% endblock %}

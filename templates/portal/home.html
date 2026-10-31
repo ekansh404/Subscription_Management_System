@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}My account{% endblock %}
+{% block topbar_title %}My account{% endblock %}
+{% block page_title %}Hello, {{ user.first_name|default:customer.name }}{% endblock %}
+{% block page_subtitle %}Your subscriptions and invoices with {{ app_name }}, in one place.{% endblock %}
+{% block content %}
+  {% for quote in quotations %}
+    <div class="alert alert-info d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <span>{% icon "send" "me-1" %}Quotation <strong>{{ quote.number }}</strong> for {{ quote.plan.name }} ({{ quote.amount_total|money }} per {{ quote.plan.get_billing_period_display|lower }}) is waiting for you{% if quote.quotation_valid_until %}, valid until {{ quote.quotation_valid_until|date:"d M Y" }}{% endif %}.</span>
+      <a href="{% url 'portal:subscription_detail' quote.pk %}" class="btn btn-primary btn-sm">Review &amp; accept</a>
+    </div>
+  {% endfor %}
+  <div class="row g-3 mb-3">
+    <div class="col-sm-6 col-xl-3">{% url 'portal:subscription_list' as subs_url %}{% include "partials/_stat_card.html" with label="Active subscriptions" value=active_count icon="repeat" tone="primary" url=subs_url %}</div>
+    <div class="col-sm-6 col-xl-3">{% url 'portal:invoice_list' as inv_url %}{% include "partials/_stat_card.html" with label="To pay" value=outstanding|money icon="wallet" tone="warning" url=inv_url|add:"?state=outstanding" %}</div>
+    <div class="col-sm-6 col-xl-3">{% include "partials/_stat_card.html" with label="Overdue" value=overdue|money icon="alert" tone="danger" url=inv_url|add:"?state=overdue" %}</div>
+    <div class="col-sm-6 col-xl-3">{% if next_invoice %}{% include "partials/_stat_card.html" with label="Next invoice" value=next_invoice.next_invoice_date|date:"d M Y" hint=next_invoice.amount_total|money icon="calendar" tone="info" %}{% else %}{% include "partials/_stat_card.html" with label="Next invoice" value="-" icon="calendar" tone="info" %}{% endif %}</div>
+  </div>
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="card table-card h-100"><div class="card-header fw-semibold">My subscriptions</div><div class="card-body p-0">
+        {% if subscriptions %}
+          <div class="table-responsive"><table class="table table-hover align-middle mb-0"><tbody>
+            {% for sub in subscriptions %}
+              <tr><td><a href="{% url 'portal:subscription_detail' sub.pk %}" class="row-link">{{ sub.number }}</a><div class="small text-muted">{{ sub.plan.name }}</div></td><td class="text-end">{{ sub.amount_total|money }}<div class="small text-muted">per {{ sub.plan.get_billing_period_display|lower }}</div></td><td>{% status_badge sub.status sub.get_status_display %}</td></tr>
+            {% endfor %}
+          </tbody></table></div>
+        {% else %}
+          {% include "partials/_empty_state.html" with icon="repeat" title="No active subscription" text="Our team will send you a quotation; you can accept it here." %}
+        {% endif %}
+      </div></div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card table-card h-100"><div class="card-header fw-semibold">Recent invoices</div><div class="card-body p-0">
+        {% if recent_invoices %}
+          <div class="table-responsive"><table class="table table-hover align-middle mb-0"><tbody>
+            {% for invoice in recent_invoices %}
+              <tr><td><a href="{% url 'portal:invoice_detail' invoice.pk %}" class="row-link">{{ invoice.number }}</a><div class="small text-muted">due {{ invoice.due_date|date:"d M Y" }}</div></td><td class="text-end">{{ invoice.amount_total|money }}</td><td>{% status_badge invoice.payment_state %}</td></tr>
+            {% endfor %}
+          </tbody></table></div>
+        {% else %}
+          {% include "partials/_empty_state.html" with icon="file-text" title="No invoices yet" %}
+        {% endif %}
+      </div></div>
+    </div>
+  </div>
+{% endblock %}
